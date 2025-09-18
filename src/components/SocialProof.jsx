@@ -27,8 +27,18 @@ const SocialProof = () => {
   ];
 
   return (
-    <section className="w-full py-16">
-      <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 sm:grid-cols-3 gap-8 text-center">
+    <section className="w-full py-20 px-4">
+      {/* Section Heading */}
+      <motion.h2 initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        viewport={{ once: true }} className="text-xl md:text-2xl font-extrabold text-gray-900 text-center mb-12 relative">
+        Loved By Thousands
+        <span className="absolute left-1/2 transform -translate-x-1/2 bottom-[-15px] w-20 h-1.5 bg-gradient-to-r from-yellow-500 to-amber-600 rounded-full"></span>
+      </motion.h2>
+
+      {/* Stats */}
+      <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-8 text-center">
         {stats.map((stat, i) => (
           <motion.div
             key={i}
@@ -42,11 +52,11 @@ const SocialProof = () => {
             <h3 className="text-3xl font-extrabold text-gray-900">
               <CountUp
                 end={stat.value}
-                duration={3} // ⏳ slower, more impactful
+                duration={3}
                 decimals={stat.decimals || 0}
                 suffix={stat.suffix}
-                enableScrollSpy // 👀 only animates on viewport
-                scrollSpyOnce // runs only first time in view
+                enableScrollSpy
+                scrollSpyOnce
               />
             </h3>
             <p className="text-gray-600 mt-2">{stat.label}</p>
