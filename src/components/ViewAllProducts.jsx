@@ -1,37 +1,76 @@
+"use client";
 import Link from "next/link";
-import React from "react";
+import React, { useState, useEffect } from "react";
 
 const ViewAllProducts = () => {
+  const [dotStyles, setDotStyles] = useState([]);
+
+  useEffect(() => {
+    const styles = Array.from({ length: 14 }).map(() => ({
+      width: `${Math.random() * 1 + 1.5}px`,
+      height: `${Math.random() * 1 + 1.5}px`,
+      top: `${Math.random() * 100}%`,
+      left: `${Math.random() * 100}%`,
+      boxShadow: "0 0 6px rgba(255,255,255,0.7)",
+      animation: `twinkle 2.5s infinite ease-in-out ${Math.random() * 3}s, 
+                  float${(Math.floor(Math.random() * 4) + 1)} ${5 + Math.random() * 3}s infinite ease-in-out ${Math.random() * 2}s`,
+    }));
+    setDotStyles(styles);
+  }, []);
+
   return (
     <div className="relative flex justify-center mt-12">
-      {/* Smooth twinkling dots */}
-      <span className="absolute -top-3 left-1/3 w-2 h-2 bg-yellow-400 rounded-full animate-twinkle"></span>
-      <span className="absolute -bottom-3 right-1/3 w-3 h-3 bg-yellow-500 rounded-full animate-twinkle-delayed"></span>
-      <span className="absolute -top-8 right-1/4 w-2 h-2 bg-yellow-300 rounded-full animate-twinkle"></span>
-      <span className="absolute -bottom-8 left-1/4 w-3 h-3 bg-yellow-600 rounded-full animate-twinkle-delayed"></span>
-
-      <Link href="/shop">
-        <button
-          className="relative inline-flex items-center px-8 py-3 text-lg font-semibold text-white
-          rounded-full bg-gradient-to-r from-yellow-500 to-yellow-700
-          shadow-lg shadow-yellow-500/30
-          overflow-hidden group transition-all duration-300"
-        >
-          {/* Glowing hover aura */}
+      <div className="relative flex items-center justify-center w-[280px] md:w-[320px] px-6 py-4 rounded-2xl bg-[#1A1A1A] text-white shadow-lg overflow-hidden border border-[#333]">
+        {/* Animated floating dots with random twinkling */}
+        {dotStyles.map((style, i) => (
           <span
-            className="absolute inset-0 w-full h-full rounded-full bg-gradient-to-r from-yellow-400 to-yellow-600 
-            opacity-0 group-hover:opacity-100 blur-xl transition duration-500"
+            key={i}
+            className="absolute bg-amber-400/70 rounded-full"
+            style={style}
           ></span>
+        ))}
 
-          {/* Button text */}
-          <span className="relative flex items-center gap-2">
-            View All Products
-            <span className="transform translate-x-0 group-hover:translate-x-1 transition-transform duration-300">
-              →
-            </span>
+        {/* Shop Button (text only, white color) */}
+        <Link href="/shop">
+          <span className="relative z-10 text-lg font-semibold text-white cursor-pointer hover:text-gray-300 transition-colors duration-300">
+            View All Products →
           </span>
-        </button>
-      </Link>
+        </Link>
+      </div>
+
+      <style jsx>{`
+        @keyframes twinkle {
+          0%, 100% {
+            opacity: 0.2;
+            transform: scale(0.7);
+          }
+          50% {
+            opacity: 1;
+            transform: scale(1.4);
+          }
+        }
+
+        @keyframes float1 {
+          0% { transform: translate(0, 0); }
+          50% { transform: translate(6px, -8px); }
+          100% { transform: translate(0, 0); }
+        }
+        @keyframes float2 {
+          0% { transform: translate(0, 0); }
+          50% { transform: translate(-9px, 5px); }
+          100% { transform: translate(0, 0); }
+        }
+        @keyframes float3 {
+          0% { transform: translate(0, 0); }
+          50% { transform: translate(7px, 9px); }
+          100% { transform: translate(0, 0); }
+        }
+        @keyframes float4 {
+          0% { transform: translate(0, 0); }
+          50% { transform: translate(-7px, -9px); }
+          100% { transform: translate(0, 0); }
+        }
+      `}</style>
     </div>
   );
 };
