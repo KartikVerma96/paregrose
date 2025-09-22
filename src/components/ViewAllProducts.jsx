@@ -25,7 +25,7 @@ const ViewAllProducts = () => {
         {dotStyles.map((style, i) => (
           <span
             key={i}
-            className="absolute bg-amber-400/70 rounded-full"
+            className="absolute bg-amber-400/80 rounded-full"
             style={style}
           ></span>
         ))}
