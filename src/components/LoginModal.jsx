@@ -7,6 +7,7 @@ import Image from "next/image";
 const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
   const modalRef = useRef(null);
   const [showPassword, setShowPassword] = useState(false);
+    const [errorMessage, setErrorMessage] = useState(null);
 
   // Close modal on Escape key press
   useEffect(() => {

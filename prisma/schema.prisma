@@ -12,7 +12,8 @@ model User {
   fullName  String
   email     String   @unique
   password  String?
-  provider  String?  @default("credentials") // "credentials" or "google"
+  provider  String?  @default("credentials")
+  providerId String?
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime? @updatedAt
 }

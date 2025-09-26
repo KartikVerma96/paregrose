@@ -8,6 +8,10 @@ const prisma = new PrismaClient();
 
 export const authOptions = {
   providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    }),
     CredentialsProvider({
       name: "Credentials",
       credentials: {
@@ -15,63 +19,81 @@ export const authOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
-        });
+        console.log("Credentials authorize called with:", credentials.email);
+        try {
+          const user = await prisma.user.findUnique({
+            where: { email: credentials.email },
+          });
 
-        if (user && user.provider === "credentials") {
-          const isValid = await bcrypt.compare(credentials.password, user.password);
-          if (isValid) {
-            return { id: user.id, name: user.fullName, email: user.email };
+          if (!user || user.provider !== "credentials") {
+            console.error("Authorize error: User not found or invalid provider");
+            return null;
           }
+
+          const isValid = await bcrypt.compare(credentials.password, user.password);
+          if (!isValid) {
+            console.error("Authorize error: Invalid password");
+            return null;
+          }
+
+          console.log("Authorize success for user:", user.email);
+          return { id: user.id, name: user.fullName, email: user.email };
+        } catch (error) {
+          console.error("Authorize error:", error.message);
+          return null;
         }
-        return null;
       },
-    }),
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     }),
   ],
   callbacks: {
-    async signIn({ user, account, profile }) {
-      if (account.provider === "google") {
+    async signIn({ user, account }) {
+      console.log("SignIn callback:", { user, account });
+      try {
         const existingUser = await prisma.user.findUnique({
           where: { email: user.email },
         });
 
-        if (!existingUser) {
-          await prisma.user.create({
-            data: {
-              fullName: user.name || profile.name,
-              email: user.email,
-              provider: "google",
-            },
-          });
+        if (existingUser) {
+          console.error("SignIn error: Email already registered");
+          return { error: "EmailAlreadyRegistered" };
         }
+
+        console.log("Creating new user for Google sign-in");
+        await prisma.user.create({
+          data: {
+            email: user.email,
+            fullName: user.name || "Google User",
+            provider: account.provider,
+            providerId: account.providerAccountId,
+          },
+        });
+        console.log("New user created:", user.email);
+        return true;
+      } catch (error) {
+        console.error("SignIn callback error:", error.message);
+        return { error: "EmailAlreadyRegistered" };
       }
-      return true;
     },
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.fullName = user.name;
       }
       return token;
     },
     async session({ session, token }) {
-      session.user.id = token.id;
-      session.user.fullName = token.fullName;
-      return session;
+      try {
+        session.user.id = token.id;
+        return session;
+      } catch (error) {
+        console.error("Session callback error:", error.message);
+        return { error: "SessionError" };
+      }
     },
   },
   pages: {
-    signIn: "/auth/signin",
     error: "/auth/error",
   },
-  secret: process.env.NEXTAUTH_SECRET,
 };
 
 const handler = NextAuth(authOptions);
-
 export { handler as GET, handler as POST };

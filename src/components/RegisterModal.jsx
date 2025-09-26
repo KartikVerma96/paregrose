@@ -37,7 +37,8 @@ const registerSchema = z
 
 const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
   const modalRef = useRef(null);
-  const [error, setError] = useState(null);
+  const [errorMessage, setErrorMessage] = useState(null);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   // Initialize React Hook Form with Zod resolver
   const {
@@ -54,7 +55,7 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
       password: "",
       confirmPassword: "",
     },
-    mode: "onChange", // Enable real-time validation
+    mode: "onChange",
   });
 
   useEffect(() => {
@@ -73,8 +74,9 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
 
   // Form submission handler
   const onSubmit = async (data) => {
+    console.log("Form submission started:", data);
     try {
-      setError(null);
+      setErrorMessage(null);
       const response = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -85,41 +87,87 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
         }),
       });
 
+      console.log("Register API response:", { status: response.status, ok: response.ok });
       const result = await response.json();
+      console.log("Register API result:", result);
 
       if (!response.ok) {
-        throw new Error(result.message || "Registration failed");
+        setErrorMessage(result.message || "Registration failed");
+        console.log("Registration failed with message:", result.message || "Unknown error");
+        return;
       }
 
-      // Sign in user after successful registration
+      console.log("Attempting credentials sign-in");
       const signInResult = await signIn("credentials", {
         redirect: false,
         email: data.email,
         password: data.password,
       });
 
+      console.log("Credentials sign-in result:", signInResult);
       if (signInResult?.error) {
-        throw new Error(signInResult.error || "Failed to sign in after registration");
+        setErrorMessage(signInResult.error || "Failed to sign in after registration");
+        console.log("Sign-in failed with error:", signInResult.error);
+        return;
       }
 
+      console.log("Form registration successful");
       reset();
+      setErrorMessage(null);
       onClose();
     } catch (error) {
-      setError(error.message);
+      setErrorMessage(error.message || "Unexpected error during registration");
+      console.log("Unexpected error during form registration:", error.message);
     }
   };
 
   // Google sign-in handler
   const handleGoogleSignIn = async () => {
+    console.log("Google sign-in button clicked");
     try {
-      setError(null);
+      setErrorMessage(null);
+      setIsGoogleLoading(true);
+
       const result = await signIn("google", { redirect: false });
-      if (result?.error) {
-        throw new Error(result.error || "Google sign-in failed");
+      console.log("Google sign-in result:", result);
+      setIsGoogleLoading(false);
+
+      if (result?.error === "EmailAlreadyRegistered") {
+        setErrorMessage("This email is already registered, try logging in.");
+        console.log("Google sign-in failed: Email already registered");
+        return;
       }
-      onClose();
+
+      if (result?.error) {
+        setErrorMessage(result.error || "Google sign-in failed");
+        console.log("Google sign-in failed with error:", result.error);
+        return;
+      }
+
+      // Only check session if no error
+      const sessionResponse = await fetch("/api/auth/session", {
+        headers: { Accept: "application/json" },
+      });
+      if (!sessionResponse.ok) {
+        setErrorMessage("Failed to verify session. Please try again.");
+        console.log("Session fetch failed:", sessionResponse.status);
+        return;
+      }
+      const session = await sessionResponse.json();
+      console.log("Session after Google sign-in:", session);
+
+      if (session?.user?.email) {
+        console.log("Google registration successful");
+        setErrorMessage(null);
+        onClose();
+      } else {
+        setErrorMessage("Google registration failed: No user session found");
+        console.log("Google registration error: No user session found");
+      }
     } catch (error) {
-      setError(error.message);
+      setIsGoogleLoading(false);
+      setErrorMessage(error.message || "Unexpected error during Google sign-in");
+      console.log("Unexpected error during Google sign-in:", error.message);
     }
   };
 
@@ -153,13 +201,13 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
             <h2 className="text-2xl font-bold text-center text-neutral-900 mb-1">
               Create Account
             </h2>
-            <p className="text-xs text-neutral-500 text-center mb-6">
+            <p className="text-xs text-neutral-500 text-center mb-4">
               Please fill in the details to register
             </p>
 
             {/* Error Message */}
-            {error && (
-              <p className="text-xs text-red-500 text-center mb-4">{error}</p>
+            {errorMessage && (
+              <p className="text-xs text-red-500 text-center mb-4">{errorMessage}</p>
             )}
 
             {/* Register Form */}
@@ -265,7 +313,7 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className={`bg-yellow-600 text-white py-2.5 rounded-md font-medium text-sm shadow hover:bg-yellow-700 hover:shadow-md transition ${
+                className={`bg-yellow-600 text-white py-2.5 rounded-md font-medium text-sm shadow hover:bg-yellow-700 hover:shadow-md transition cursor-pointer ${
                   isSubmitting ? "opacity-50 cursor-not-allowed" : ""
                 }`}
               >
@@ -283,7 +331,10 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
             {/* Google Register */}
             <button
               type="button"
-              className="flex items-center justify-center gap-2 border border-neutral-300 py-2.5 w-full rounded-md hover:bg-neutral-50 transition"
+              disabled={isGoogleLoading}
+              className={`flex items-center justify-center gap-2 border border-neutral-300 py-2.5 w-full rounded-md hover:bg-neutral-50 transition cursor-pointer ${
+                isGoogleLoading ? "opacity-50 cursor-not-allowed" : ""
+              }`}
               onClick={handleGoogleSignIn}
             >
               <Image
@@ -293,7 +344,7 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
                 height={18}
               />
               <span className="text-xs font-medium text-neutral-700">
-                Sign up with Google
+                {isGoogleLoading ? "Registering..." : "Sign up with Google"}
               </span>
             </button>
 
