@@ -137,7 +137,7 @@ const AdminLayout = ({ children }) => {
       </div>
 
       {/* Main content */}
-      <div className="lg:pl-64">
+      <div className="lg:pl-64 flex flex-col min-h-screen">
         {/* Top bar */}
         <div className="sticky top-0 z-40 bg-white shadow-sm border-b border-gray-200">
           <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
@@ -175,9 +175,41 @@ const AdminLayout = ({ children }) => {
         </div>
 
         {/* Page content */}
-        <main className="p-4 sm:p-6 lg:p-8">
+        <main className="p-4 sm:p-6 lg:p-8 flex-grow">
           {children}
         </main>
+
+        {/* Admin Footer */}
+        <footer className="bg-white border-t border-gray-200 px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex flex-col sm:flex-row justify-between items-center">
+            <div className="flex items-center space-x-4 text-sm text-gray-500">
+              <span>© {new Date().getFullYear()} Paregrose Admin Panel</span>
+              <span className="hidden sm:inline">•</span>
+              <span>Version 1.0.0</span>
+            </div>
+            <div className="flex items-center space-x-4 mt-2 sm:mt-0">
+              <a
+                href="/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-gray-500 hover:text-gray-700 cursor-pointer"
+              >
+                View Website
+              </a>
+              <span className="text-gray-300">•</span>
+              <a
+                href="/admin/settings"
+                className="text-sm text-gray-500 hover:text-gray-700 cursor-pointer"
+              >
+                Settings
+              </a>
+              <span className="text-gray-300">•</span>
+              <span className="text-sm text-gray-500">
+                Last updated: {new Date().toLocaleDateString()}
+              </span>
+            </div>
+          </div>
+        </footer>
       </div>
 
       {/* Mobile overlay */}
