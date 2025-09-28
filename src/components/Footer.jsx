@@ -9,13 +9,21 @@ const playfair = Playfair_Display({
 
 const Footer = () => {
   return (
-    <footer className="bg-gradient-to-br from-[#0f0f23] via-[#1a1a2e] to-[#16213e] text-white relative overflow-hidden">
-      {/* Animated Background Elements */}
-      <div className="absolute inset-0">
-        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_20%_80%,rgba(120,119,198,0.3),transparent_50%)]"></div>
-        <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_80%_20%,rgba(255,119,198,0.3),transparent_50%)] animate-pulse"></div>
-      </div>
-      <div className="relative z-10 w-full mx-auto px-4 sm:px-6 md:px-8 py-12 sm:py-16">
+    <footer className="text-white relative overflow-hidden">
+      {/* Background Image */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: 'url(/pxfuel.jpg)'
+        }}
+      ></div>
+      
+      {/* Dark Overlay for better text readability */}
+      <div className="absolute inset-0 bg-black/60"></div>
+      
+      {/* Subtle gradient overlay for aesthetic appeal */}
+      <div className="absolute inset-0 bg-gradient-to-br from-black/40 via-transparent to-black/50"></div>
+      <div className="relative z-10 w-full mx-auto px-4 sm:px-6 md:px-8 py-8 sm:py-12">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-10 lg:gap-12">
           
           {/* Brand / Logo */}
@@ -103,6 +111,17 @@ const Footer = () => {
 
       {/* Inline Styles for Animations */}
       <style jsx>{`
+        /* Custom Text Selection */
+        ::selection {
+          background-color: rgb(251 191 36); /* amber-400 */
+          color: rgb(0 0 0); /* black text for better contrast */
+        }
+        
+        ::-moz-selection {
+          background-color: rgb(251 191 36); /* amber-400 */
+          color: rgb(0 0 0); /* black text for better contrast */
+        }
+
         /* Background Radial Gradients Animation */
         .animate-pulse {
           animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;

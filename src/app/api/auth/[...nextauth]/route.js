@@ -49,29 +49,41 @@ export const authOptions = {
     async signIn({ user, account }) {
       console.log("SignIn callback:", { user, account });
       try {
-        const existingUser = await prisma.user.findUnique({
-          where: { email: user.email },
-        });
+        // For Google provider, handle user creation/authentication
+        if (account.provider === "google") {
+          const existingUser = await prisma.user.findUnique({
+            where: { email: user.email },
+          });
 
-        if (existingUser) {
-          console.error("SignIn error: Email already registered");
-          return { error: "EmailAlreadyRegistered" };
+          // If user exists, allow sign in
+          if (existingUser) {
+            console.log("Existing Google user signing in:", user.email);
+            return true;
+          }
+
+          // If user doesn't exist, create new user
+          console.log("Creating new user for Google sign-in");
+          await prisma.user.create({
+            data: {
+              email: user.email,
+              fullName: user.name || "Google User",
+              provider: account.provider,
+              providerId: account.providerAccountId,
+            },
+          });
+          console.log("New user created:", user.email);
+          return true;
         }
 
-        console.log("Creating new user for Google sign-in");
-        await prisma.user.create({
-          data: {
-            email: user.email,
-            fullName: user.name || "Google User",
-            provider: account.provider,
-            providerId: account.providerAccountId,
-          },
-        });
-        console.log("New user created:", user.email);
+        // For credentials provider, allow sign in (validation handled in authorize)
+        if (account.provider === "credentials") {
+          return true;
+        }
+
         return true;
       } catch (error) {
         console.error("SignIn callback error:", error.message);
-        return { error: "EmailAlreadyRegistered" };
+        return false;
       }
     },
     async jwt({ token, user }) {

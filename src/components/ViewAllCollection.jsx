@@ -70,9 +70,13 @@ const ViewAllCollection = () => {
                   className={`${lobster.className} 
                     text-3xl sm:text-4xl md:text-4xl lg:text-5xl 
                     text-[#ffa85c] drop-shadow-xl 
-                    -translate-x-4 sm:-translate-x-6 md:-translate-x-8 lg:-translate-x-10`}
+                    -translate-x-4 sm:-translate-x-6 md:-translate-x-8 lg:-translate-x-10
+                    relative inline-block`}
                 >
                   {category.name}
+                  {/* Underline on hover - only under text */}
+                  <span className="absolute left-0 -bottom-2 w-0 h-1 bg-[#ffa85c] 
+                                  group-hover:w-full transition-all duration-500 ease-out"></span>
                 </h3>
               </motion.div>
             </Link>

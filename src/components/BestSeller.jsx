@@ -1,10 +1,26 @@
 'use client';
-import Image from 'next/image';
-import Link from 'next/link';
-import { FaStar } from 'react-icons/fa';
 import { motion } from 'framer-motion';
+import dynamic from 'next/dynamic';
+
+// Dynamically import ProductCard to avoid SSR issues
+const ProductCard = dynamic(() => import('./ProductCard'), {
+  ssr: false,
+  loading: () => (
+    <div className="relative bg-white/80 backdrop-blur-xl rounded-3xl overflow-hidden 
+                    shadow-[0_8px_32px_rgba(0,0,0,0.08)] 
+                    border border-white/20 animate-pulse">
+      <div className="w-full h-80 bg-gray-200"></div>
+      <div className="p-6">
+        <div className="h-4 bg-gray-200 rounded mb-3"></div>
+        <div className="h-6 bg-gray-200 rounded mb-4"></div>
+        <div className="h-10 bg-gray-200 rounded"></div>
+      </div>
+    </div>
+  )
+});
 
 const BestSeller = () => {
+  
   const products = [
     {
       id: 1,
@@ -73,56 +89,10 @@ const BestSeller = () => {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
         {products.map((product) => (
-<Link
-  key={product.id}
-  href={`/product/${product.id}`}
-  className="group border border-gray-200 bg-gradient-to-br from-white/95 via-gray-50/90 to-white/80 
-             backdrop-blur-md rounded-2xl overflow-hidden shadow-md 
-             hover:shadow-xl transition-shadow duration-300"
->
-  {/* Image */}
-  <div className="relative w-full h-80 overflow-hidden">
-    <Image
-      src={product.image}
-      alt={product.name}
-      layout="fill"
-      objectFit="cover"
-      className="transition-transform duration-500 group-hover:scale-105 rounded-t-2xl"
-    />
-<div className="absolute top-4 left-4 
-                px-3 py-1 rounded-full 
-                text-[10px] font-semibold tracking-wide uppercase 
-                bg-white/40 backdrop-blur-sm 
-                border border-amber-200/50 
-                text-amber-700 shadow-sm">
-  Exclusive
-</div>
-
-  </div>
-
-  {/* Content */}
-  <div className="p-6 bg-white/95">
-    <h3 className="text-sm md:text-base font-semibold text-gray-800 line-clamp-2 
-                   group-hover:text-amber-600 transition-colors">
-      {product.name}
-    </h3>
-
-    <div className="mt-3 flex items-center space-x-2">
-      <span className="text-lg font-bold text-amber-700">
-        ₹{product.discountedPrice.toFixed(2)}
-      </span>
-      <span className="text-sm text-gray-400 line-through">
-        ₹{product.originalPrice.toFixed(2)}
-      </span>
-      <span className="text-xs bg-amber-100 text-amber-700 font-medium px-2 py-0.5 rounded-full">
-        {((1 - product.discountedPrice / product.originalPrice) * 100).toFixed(0)}% OFF
-      </span>
-    </div>
-  </div>
-</Link>
-
-
-
+          <ProductCard 
+            key={product.id} 
+            product={product} 
+          />
         ))}
       </div>
     </section>

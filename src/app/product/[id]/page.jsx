@@ -1,207 +1,175 @@
-'use client';
-import Image from 'next/image';
-import { FaStar } from 'react-icons/fa';
-import { useParams } from 'next/navigation';
-import { useState } from 'react';
-import { motion } from 'framer-motion';
+import ProductDetailClient from './ProductDetailClient';
 
-const ProductDetail = () => {
-  const params = useParams();
+// Mock product data (in real app, this would come from API/database)
+const products = [
+  {
+    id: 1,
+    name: 'Sukhmani Gambhir Party Wear Saree With Moti Work Border',
+    images: [
+      '/images/carousel/pic_1.jpg',
+      '/images/carousel/pic_2.jpg',
+      '/images/carousel/pic_3.jpg',
+    ],
+    rating: 4.6,
+    reviews: 18,
+    originalPrice: 2799.0,
+    discountedPrice: 1499.0,
+    description:
+      'Experience elegance with this exquisite party wear saree featuring intricate moti work border. Perfect for weddings and festive occasions, crafted with premium silk and adorned with delicate embellishments.',
+    material: 'Silk',
+    size: ['S', 'M', 'L', 'XL'],
+    availability: 'In Stock',
+    category: 'Sarees',
+    brand: 'Paregrose',
+    sku: 'PRG-SAR-001',
+  },
+  {
+    id: 2,
+    name: 'Bollywood Star Suhana Khan Cream Colour Party Wear Saree',
+    images: [
+      '/images/carousel/pic_2.jpg',
+      '/images/carousel/pic_1.jpg',
+      '/images/carousel/pic_4.jpg',
+    ],
+    rating: 4.0,
+    reviews: 7,
+    originalPrice: 2049.0,
+    discountedPrice: 999.0,
+    description:
+      'Inspired by Bollywood star Suhana Khan, this cream-colored saree blends modern style with traditional charm. Ideal for parties and casual outings.',
+    material: 'Georgette',
+    size: ['S', 'M', 'L'],
+    availability: 'In Stock',
+    category: 'Sarees',
+    brand: 'Paregrose',
+    sku: 'PRG-SAR-002',
+  },
+];
+
+// Generate dynamic metadata
+export async function generateMetadata({ params }) {
   const productId = parseInt(params.id);
-
-  // Mock product data
-  const products = [
-    {
-      id: 1,
-      name: 'Sukhmani Gambhir Party Wear Saree With Moti Work Border',
-      images: [
-        '/images/carousel/pic_1.jpg',
-        '/images/carousel/pic_2.jpg',
-        '/images/carousel/pic_3.jpg',
-      ],
-      rating: 4.6,
-      reviews: 18,
-      originalPrice: 2799.0,
-      discountedPrice: 1499.0,
-      description:
-        'Experience elegance with this exquisite party wear saree featuring intricate moti work border. Perfect for weddings and festive occasions, crafted with premium silk and adorned with delicate embellishments.',
-      material: 'Silk',
-      size: ['S', 'M', 'L', 'XL'],
-      availability: 'In Stock',
-    },
-    {
-      id: 2,
-      name: 'Bollywood Star Suhana Khan Cream Colour Party Wear Saree',
-      images: [
-        '/images/carousel/pic_2.jpg',
-        '/images/carousel/pic_1.jpg',
-        '/images/carousel/pic_4.jpg',
-      ],
-      rating: 4.0,
-      reviews: 7,
-      originalPrice: 2049.0,
-      discountedPrice: 999.0,
-      description:
-        'Inspired by Bollywood star Suhana Khan, this cream-colored saree blends modern style with traditional charm. Ideal for parties and casual outings.',
-      material: 'Georgette',
-      size: ['S', 'M', 'L'],
-      availability: 'In Stock',
-    },
-  ];
-
   const product = products.find((p) => p.id === productId);
-  const [quantity, setQuantity] = useState(1);
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+
+  if (!product) {
+    return {
+      title: 'Product Not Found',
+      description: 'The requested product could not be found.',
+    };
+  }
+
+  const discountPercentage = Math.round((1 - product.discountedPrice / product.originalPrice) * 100);
+  
+  return {
+    title: `${product.name} - ${discountPercentage}% OFF | Paregrose`,
+    description: `${product.description} Shop now at ₹${product.discountedPrice} (was ₹${product.originalPrice}). ${product.rating}★ rated by ${product.reviews} customers. Free shipping available.`,
+    keywords: [
+      product.name.toLowerCase(),
+      product.category.toLowerCase(),
+      product.material.toLowerCase(),
+      'ethnic wear',
+      'saree',
+      'party wear',
+      'traditional wear',
+      'premium fashion',
+      'designer saree',
+      'indian wear'
+    ],
+    openGraph: {
+      title: `${product.name} - ${discountPercentage}% OFF`,
+      description: product.description,
+      url: `https://paregrose.com/product/${product.id}`,
+      images: [
+        {
+          url: product.images[0],
+          width: 800,
+          height: 600,
+          alt: product.name,
+        },
+      ],
+      type: 'website',
+      siteName: 'Paregrose',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${product.name} - ${discountPercentage}% OFF`,
+      description: product.description,
+      images: [product.images[0]],
+    },
+    alternates: {
+      canonical: `https://paregrose.com/product/${product.id}`,
+    },
+    other: {
+      'product:price:amount': product.discountedPrice.toString(),
+      'product:price:currency': 'INR',
+      'product:availability': product.availability.toLowerCase(),
+      'product:condition': 'new',
+      'product:brand': product.brand,
+      'product:sku': product.sku,
+    },
+  };
+}
+
+// Structured data for SEO
+function generateStructuredData(product) {
+  const discountPercentage = Math.round((1 - product.discountedPrice / product.originalPrice) * 100);
+  
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.name,
+    description: product.description,
+    image: product.images,
+    brand: {
+      '@type': 'Brand',
+      name: product.brand,
+    },
+    sku: product.sku,
+    category: product.category,
+    offers: {
+      '@type': 'Offer',
+      price: product.discountedPrice,
+      priceCurrency: 'INR',
+      availability: 'https://schema.org/InStock',
+      priceValidUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
+      seller: {
+        '@type': 'Organization',
+        name: 'Paregrose',
+      },
+    },
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: product.rating,
+      reviewCount: product.reviews,
+      bestRating: 5,
+      worstRating: 1,
+    },
+    material: product.material,
+    size: product.size,
+  };
+}
+
+export default function ProductDetail({ params }) {
+  const productId = parseInt(params.id);
+  const product = products.find((p) => p.id === productId);
 
   if (!product) {
     return <div className="text-center text-gray-600 py-20">Product not found</div>;
   }
 
-  const renderStars = (rating) => {
-    const stars = [];
-    for (let i = 1; i <= 5; i++) {
-      stars.push(
-        <FaStar
-          key={i}
-          className={i <= rating ? 'text-yellow-500' : 'text-gray-300'}
-          size={16}
-        />
-      );
-    }
-    return stars;
-  };
-
-  const imageVariants = {
-    hidden: { opacity: 0, scale: 0.95 },
-    visible: { opacity: 1, scale: 1, transition: { duration: 0.4, ease: 'easeOut' } },
-  };
+  const structuredData = generateStructuredData(product);
 
   return (
-    <section className="py-20 px-4 bg-gradient-to-br from-white via-gray-50 to-white">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-[1fr_1.2fr] gap-12">
-        {/* Product Image Gallery */}
-        <div className="space-y-6 sticky top-20">
-          <motion.div
-            key={selectedImageIndex}
-            className="relative w-full h-[550px] rounded-2xl overflow-hidden shadow-lg bg-gray-100"
-            initial="hidden"
-            animate="visible"
-            variants={imageVariants}
-          >
-            <Image
-              src={product.images[selectedImageIndex]}
-              alt={`${product.name} - Image ${selectedImageIndex + 1}`}
-              fill
-              className="object-cover transition-transform duration-500 hover:scale-105"
-            />
-          </motion.div>
-          <div className="flex space-x-3 overflow-x-auto pb-3 scrollbar-hide">
-            {product.images.map((image, index) => (
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                key={index}
-                className={`relative w-20 h-20 rounded-lg overflow-hidden cursor-pointer border-2 ${
-                  selectedImageIndex === index ? 'border-amber-500' : 'border-gray-200'
-                } transition-all duration-300 flex-shrink-0`}
-                onClick={() => setSelectedImageIndex(index)}
-              >
-                <Image
-                  src={image}
-                  alt={`${product.name} - Thumbnail ${index + 1}`}
-                  fill
-                  className="object-cover"
-                />
-              </motion.div>
-            ))}
-          </div>
-        </div>
-
-        {/* Product Details */}
-        <motion.div
-          className="bg-white/95 p-8 rounded-2xl shadow-md space-y-6"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: 'easeOut' }}
-        >
-          <h1 className="text-3xl font-bold text-gray-900 leading-snug">
-            {product.name}
-          </h1>
-
-          <div className="flex items-center space-x-3">
-            <div className="flex">{renderStars(product.rating)}</div>
-            <span className="text-sm text-gray-600 font-medium">
-              ({product.reviews} reviews)
-            </span>
-          </div>
-
-          <div className="space-y-2">
-            <p className="text-2xl font-semibold text-amber-700">
-              ₹{product.discountedPrice.toFixed(2)}
-            </p>
-            <div className="flex items-center space-x-4">
-              <p className="text-sm text-gray-500 line-through">
-                ₹{product.originalPrice.toFixed(2)}
-              </p>
-              <span className="text-sm bg-amber-100 text-amber-700 font-medium px-3 py-1 rounded-full">
-                {((1 - product.discountedPrice / product.originalPrice) * 100).toFixed(0)}% OFF
-              </span>
-            </div>
-          </div>
-
-          <p className="text-gray-700 leading-relaxed text-base">
-            {product.description}
-          </p>
-
-          <div className="space-y-5">
-            <div>
-              <h3 className="text-lg font-semibold text-gray-800">Material</h3>
-              <p className="text-gray-600 text-sm">{product.material}</p>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-gray-800">Available Sizes</h3>
-              <div className="flex space-x-2 flex-wrap">
-                {product.size.map((size, index) => (
-                  <span
-                    key={index}
-                    className="text-sm text-gray-700 bg-gray-100 px-4 py-2 rounded-full hover:bg-amber-100 cursor-pointer transition-colors"
-                  >
-                    {size}
-                  </span>
-                ))}
-              </div>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-gray-800">Availability</h3>
-              <p className="text-gray-600 text-sm">{product.availability}</p>
-            </div>
-          </div>
-
-          <div className="flex items-center space-x-6">
-            <label className="text-lg font-semibold text-gray-800">Quantity</label>
-            <div className="flex items-center space-x-3">
-              <button
-                onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center hover:bg-gray-300 transition-colors"
-              >
-                -
-              </button>
-              <span className="text-lg">{quantity}</span>
-              <button
-                onClick={() => setQuantity(quantity + 1)}
-                className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center hover:bg-gray-300 transition-colors"
-              >
-                +
-              </button>
-            </div>
-          </div>
-
-          <button className="w-full md:w-auto bg-amber-600 text-white py-4 px-8 rounded-lg font-semibold shadow-md hover:bg-amber-700 hover:shadow-lg transition-all">
-            Add to Cart
-          </button>
-        </motion.div>
-      </div>
-    </section>
+    <>
+      {/* Structured Data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(structuredData),
+        }}
+      />
+      <ProductDetailClient product={product} />
+    </>
   );
-};
+}
 
-export default ProductDetail;
