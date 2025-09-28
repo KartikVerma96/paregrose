@@ -8,32 +8,9 @@ export async function GET(request) {
     const includeProducts = searchParams.get('includeProducts') === 'true'
     const includeCount = searchParams.get('includeCount') === 'true'
     
-    const categories = await prisma.category.findMany({
+    const categories = await prisma.categories.findMany({
       where: {
-        isActive: true
-      },
-      include: {
-        products: includeProducts ? {
-          where: { isActive: true },
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-            price: true,
-            images: {
-              where: { isPrimary: true },
-              select: { imageUrl: true }
-            }
-          },
-          take: 4 // Limit products per category
-        } : false,
-        _count: includeCount ? {
-          select: {
-            products: {
-              where: { isActive: true }
-            }
-          }
-        } : false
+        is_active: true
       },
       orderBy: {
         name: 'asc'
@@ -70,13 +47,13 @@ export async function POST(request) {
     // Create slug from name
     const slug = body.slug || body.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')
     
-    const category = await prisma.category.create({
+    const category = await prisma.categories.create({
       data: {
         name: body.name,
         slug,
         description: body.description,
-        imageUrl: body.imageUrl,
-        isActive: body.isActive !== false
+        image_url: body.imageUrl,
+        is_active: body.isActive !== false
       }
     })
     
