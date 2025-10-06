@@ -6,6 +6,11 @@ import { createAdminRoute, USER_ROLES } from '@/lib/adminMiddleware'
 async function handler(request, context, user) {
   try {
     const categories = await prisma.categories.findMany({
+      include: {
+        subcategories: {
+          orderBy: { name: 'asc' }
+        }
+      },
       orderBy: {
         name: 'asc'
       }

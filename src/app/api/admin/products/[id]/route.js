@@ -5,14 +5,15 @@ import { createAdminRoute, USER_ROLES } from '@/lib/adminMiddleware'
 // GET /api/admin/products/[id] - Get single product for admin
 async function handler(request, context, user) {
   try {
+    const { params } = await context
     const { id } = params
     
-    const product = await prisma.product.findUnique({
+    const product = await prisma.products.findUnique({
       where: { id: parseInt(id) },
       include: {
         category: true,
         images: {
-          orderBy: { sortOrder: 'asc' }
+          orderBy: { sort_order: 'asc' }
         },
         _count: {
           select: {
@@ -49,11 +50,12 @@ async function handler(request, context, user) {
 // PUT /api/admin/products/[id] - Update product (Admin only)
 async function updateProductHandler(request, context, user) {
   try {
+    const { params } = await context
     const { id } = params
     const body = await request.json()
     
     // Check if product exists
-    const existingProduct = await prisma.product.findUnique({
+    const existingProduct = await prisma.products.findUnique({
       where: { id: parseInt(id) }
     })
     
@@ -70,7 +72,7 @@ async function updateProductHandler(request, context, user) {
       : existingProduct.slug
     
     // Update product
-    const updatedProduct = await prisma.product.update({
+    const updatedProduct = await prisma.products.update({
       where: { id: parseInt(id) },
       data: {
         name: body.name || existingProduct.name,
@@ -108,14 +110,14 @@ async function updateProductHandler(request, context, user) {
     // Update images if provided
     if (body.images && Array.isArray(body.images)) {
       // Delete existing images
-      await prisma.productImage.deleteMany({
+      await prisma.productsImage.deleteMany({
         where: { productId: parseInt(id) }
       })
       
       // Create new images
       await Promise.all(
         body.images.map((imageData, index) =>
-          prisma.productImage.create({
+          prisma.productsImage.create({
             data: {
               productId: parseInt(id),
               imageUrl: imageData.url,
@@ -129,12 +131,12 @@ async function updateProductHandler(request, context, user) {
     }
     
     // Fetch the complete updated product
-    const completeProduct = await prisma.product.findUnique({
+    const completeProduct = await prisma.products.findUnique({
       where: { id: parseInt(id) },
       include: {
         category: true,
         images: {
-          orderBy: { sortOrder: 'asc' }
+          orderBy: { sort_order: 'asc' }
         }
       }
     })
@@ -164,10 +166,11 @@ async function updateProductHandler(request, context, user) {
 // DELETE /api/admin/products/[id] - Delete product (Admin only)
 async function deleteProductHandler(request, context, user) {
   try {
+    const { params } = await context
     const { id } = params
     
     // Check if product exists
-    const existingProduct = await prisma.product.findUnique({
+    const existingProduct = await prisma.products.findUnique({
       where: { id: parseInt(id) }
     })
     
@@ -179,7 +182,7 @@ async function deleteProductHandler(request, context, user) {
     }
     
     // Delete product (this will cascade delete related records due to foreign keys)
-    await prisma.product.delete({
+    await prisma.products.delete({
       where: { id: parseInt(id) }
     })
     

@@ -5,8 +5,8 @@ import { createAdminRoute, USER_ROLES } from '@/lib/adminMiddleware'
 // PUT /api/admin/categories/[id] - Update specific category
 async function updateHandler(request, context, user) {
   try {
-    const { params } = context
-    const categoryId = params.id
+    const { params } = await context
+    const categoryId = parseInt(params.id)
     const body = await request.json()
     
     // Check if category exists
@@ -64,8 +64,8 @@ async function updateHandler(request, context, user) {
 // DELETE /api/admin/categories/[id] - Delete specific category
 async function deleteHandler(request, context, user) {
   try {
-    const { params } = context
-    const categoryId = params.id
+    const { params } = await context
+    const categoryId = parseInt(params.id)
     
     // Check if category exists
     const existingCategory = await prisma.categories.findUnique({

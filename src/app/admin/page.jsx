@@ -8,6 +8,7 @@ export default function AdminDashboard() {
     totalOrders: 0,
     totalProducts: 0,
     totalUsers: 0,
+    totalCategories: 0,
     totalRevenue: 0,
     recentOrders: [],
     topProducts: [],
@@ -31,22 +32,25 @@ export default function AdminDashboard() {
       setLoading(true)
       
       // Fetch dashboard statistics
-      const [ordersRes, productsRes, usersRes] = await Promise.all([
+      const [ordersRes, productsRes, usersRes, categoriesRes] = await Promise.all([
         fetch(`/api/admin/dashboard/orders?days=${timeRange}`),
         fetch(`/api/admin/dashboard/products?days=${timeRange}`),
-        fetch(`/api/admin/dashboard/users?days=${timeRange}`)
+        fetch(`/api/admin/dashboard/users?days=${timeRange}`),
+        fetch('/api/admin/categories')
       ])
 
-      const [ordersData, productsData, usersData] = await Promise.all([
+      const [ordersData, productsData, usersData, categoriesData] = await Promise.all([
         ordersRes.json(),
         productsRes.json(),
-        usersRes.json()
+        usersRes.json(),
+        categoriesRes.json()
       ])
 
       setStats({
         totalOrders: ordersData.data?.totalOrders || 0,
         totalProducts: productsData.data?.totalProducts || 0,
         totalUsers: usersData.data?.totalUsers || 0,
+        totalCategories: categoriesData.success ? categoriesData.data.length : 0,
         totalRevenue: ordersData.data?.totalRevenue || 0,
         recentOrders: ordersData.data?.recentOrders || [],
         topProducts: productsData.data?.topProducts || [],
@@ -69,8 +73,8 @@ export default function AdminDashboard() {
     return (
       <AdminLayout>
         <div className="animate-pulse">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {[...Array(4)].map((_, i) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+            {[...Array(5)].map((_, i) => (
               <div key={i} className="bg-white rounded-lg shadow p-6">
                 <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
                 <div className="h-8 bg-gray-200 rounded w-1/2"></div>
@@ -112,7 +116,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Key Metrics Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
           <div className="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
             <div className="flex items-center justify-between">
               <div>
@@ -178,6 +182,23 @@ export default function AdminDashboard() {
               <div className="p-3 rounded-full bg-amber-100 text-amber-600">
                 <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-orange-500">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Total Categories</p>
+                <p className="text-3xl font-bold text-gray-900">{stats.totalCategories || 0}</p>
+                <p className="text-sm text-gray-500 mt-1">
+                  Active categories
+                </p>
+              </div>
+              <div className="p-3 rounded-full bg-orange-100 text-orange-600">
+                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                 </svg>
               </div>
             </div>
@@ -374,6 +395,21 @@ export default function AdminDashboard() {
               <div className="ml-3">
                 <p className="text-sm font-medium text-gray-900">Manage Users</p>
                 <p className="text-sm text-gray-500">User management</p>
+              </div>
+            </a>
+
+            <a
+              href="/admin/categories"
+              className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-200 group cursor-pointer"
+            >
+              <div className="p-2 bg-orange-100 text-orange-600 rounded-lg group-hover:bg-orange-200">
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm font-medium text-gray-900">Manage Categories</p>
+                <p className="text-sm text-gray-500">Organize products</p>
               </div>
             </a>
 

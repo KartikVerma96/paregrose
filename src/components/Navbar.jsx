@@ -9,6 +9,7 @@ import RegisterModal from "./RegisterModal";
 import { useAuth } from "@/hooks/useAuth";
 import { useWishlist } from "@/hooks/useWishlist";
 import { useCart } from "@/hooks/useCart";
+import { useCategories } from "@/hooks/useCategories";
 
 export const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -29,22 +30,31 @@ export const Navbar = () => {
   // Cart state
   const { count: cartCount } = useCart();
 
+  // Categories state
+  const { categories, loading: categoriesLoading } = useCategories();
+
   // Fix hydration issue by ensuring client-side rendering for dynamic content
   useEffect(() => {
     setIsClient(true);
   }, []);
 
-  const nav_items = [
+  // Static navigation items (non-category items)
+  const static_nav_items = [
     { name: "About", href: "/about" },
-    { name: "Lehanga", href: "/lehanga" },
-    { name: "Gown", href: "/gown" },
-    { name: "Dress", href: "/dress" },
-    { name: "Kurti", href: "/kurti" },
-    { name: "Saree", href: "/saree" },
-    { name: "Navratri Outfits", href: "/navratri-outfits" },
-    { name: "Oxidized Jewellery", href: "/oxidixed-jewellery" },
-    { name: "Home Decor", href: "/home-decor" },
   ];
+
+  // Dynamic category navigation items with subcategories
+  const category_nav_items = categories.map(category => ({
+    name: category.name,
+    href: `/shop/${category.slug}`,
+    subcategories: category.subcategories ? category.subcategories.map(child => ({
+      name: child.name,
+      href: `/shop/${child.slug}`
+    })) : []
+  }));
+
+  // Combine static and dynamic navigation items
+  const nav_items = [...static_nav_items, ...category_nav_items];
 
   return (
     <>
@@ -154,17 +164,55 @@ export const Navbar = () => {
           {/* Bottom Row - Navigation Menu (Desktop) */}
           <div className="hidden lg:block">
             <ul className="flex justify-center items-center gap-8 xl:gap-10 py-2">
-              {nav_items.map((item, index) => (
-                <li key={index} className="relative group">
-                  <Link
-                    href={item.href}
-                    className="cursor-pointer text-neutral-700 transition-colors duration-300 group-hover:text-yellow-600 whitespace-nowrap">
-                    {item.name}
-                  </Link>
-                  {/* Golden underline effect */}
-                  <span className="absolute left-0 bottom-[-4px] w-0 h-[2px] bg-yellow-600 transition-all duration-300 group-hover:w-full"></span>
-                </li>
-              ))}
+              {categoriesLoading ? (
+                <li className="text-neutral-500 text-sm">Loading categories...</li>
+              ) : (
+                nav_items.map((item, index) => (
+                  <li key={index} className="relative group">
+                    <Link
+                      href={item.href}
+                      className="cursor-pointer text-neutral-700 transition-colors duration-300 group-hover:text-yellow-600 whitespace-nowrap flex items-center gap-1">
+                      {item.name}
+                      {/* Dropdown arrow for categories with subcategories */}
+                      {item.subcategories && item.subcategories.length > 0 && (
+                        <svg 
+                          className="w-4 h-4 transition-transform duration-300 group-hover:rotate-180" 
+                          fill="none" 
+                          stroke="currentColor" 
+                          viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      )}
+                    </Link>
+                    {/* Golden underline effect */}
+                    <span className="absolute left-0 bottom-[-4px] w-0 h-[2px] bg-yellow-600 transition-all duration-300 group-hover:w-full"></span>
+                    
+                    {/* Subcategories Dropdown */}
+                    {item.subcategories && item.subcategories.length > 0 && (
+                      <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+                        <div className="py-2">
+                          {/* Main category link */}
+                          <Link
+                            href={item.href}
+                            className="block px-4 py-3 text-sm font-semibold text-gray-900 hover:bg-amber-50 hover:text-amber-600 transition-colors duration-200 border-b border-gray-100">
+                            View All {item.name}
+                          </Link>
+                          
+                          {/* Subcategories */}
+                          {item.subcategories.map((subcategory, subIndex) => (
+                            <Link
+                              key={subIndex}
+                              href={subcategory.href}
+                              className="block px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-600 transition-colors duration-200">
+                              {subcategory.name}
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </li>
+                ))
+              )}
             </ul>
           </div>
 
@@ -274,16 +322,38 @@ export const Navbar = () => {
           <div className="border-t border-neutral-200 bg-white">
             {/* Mobile Navigation Links */}
             <ul className="flex flex-col items-center gap-2 py-4 px-4">
-              {nav_items.map((item, index) => (
-                <li key={index} className="w-full">
-                  <Link
-                    href={item.href}
-                    className="block w-full text-center py-3 px-4 rounded-lg text-neutral-600 hover:text-yellow-600 hover:bg-amber-50 transition-all duration-200 text-sm font-semibold"
-                    onClick={() => setIsOpen(false)}>
-                    {item.name}
-                  </Link>
+              {categoriesLoading ? (
+                <li className="w-full text-center py-3 px-4 text-neutral-500 text-sm">
+                  Loading categories...
                 </li>
-              ))}
+              ) : (
+                nav_items.map((item, index) => (
+                  <li key={index} className="w-full">
+                    {/* Main category link */}
+                    <Link
+                      href={item.href}
+                      className="block w-full text-center py-3 px-4 rounded-lg text-neutral-600 hover:text-yellow-600 hover:bg-amber-50 transition-all duration-200 text-sm font-semibold"
+                      onClick={() => setIsOpen(false)}>
+                      {item.name}
+                    </Link>
+                    
+                    {/* Subcategories for mobile */}
+                    {item.subcategories && item.subcategories.length > 0 && (
+                      <div className="ml-4 mt-1 space-y-1">
+                        {item.subcategories.map((subcategory, subIndex) => (
+                          <Link
+                            key={subIndex}
+                            href={subcategory.href}
+                            className="block w-full text-center py-2 px-4 rounded-lg text-neutral-500 hover:text-yellow-600 hover:bg-amber-50 transition-all duration-200 text-xs"
+                            onClick={() => setIsOpen(false)}>
+                            • {subcategory.name}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </li>
+                ))
+              )}
             </ul>
             
             {/* Mobile Auth Section */}

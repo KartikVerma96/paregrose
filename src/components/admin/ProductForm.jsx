@@ -71,13 +71,28 @@ const ProductForm = ({ product = null, categories = [] }) => {
 
     try {
       const submitData = {
-        ...formData,
+        name: formData.name,
+        description: formData.description,
+        shortDescription: formData.shortDescription, // API will map this to short_description
+        categoryId: formData.categoryId, // API will map this to category_id
         price: parseFloat(formData.price),
-        originalPrice: formData.originalPrice ? parseFloat(formData.originalPrice) : null,
-        stockQuantity: parseInt(formData.stockQuantity),
+        originalPrice: formData.originalPrice ? parseFloat(formData.originalPrice) : null, // API will map this to original_price
+        sku: formData.sku,
+        brand: formData.brand,
+        material: formData.material,
+        sizeOptions: formData.sizeOptions ? JSON.parse(formData.sizeOptions) : null, // API will map this to size_options
+        colorOptions: formData.colorOptions ? JSON.parse(formData.colorOptions) : null, // API will map this to color_options
+        availability: formData.availability,
+        stockQuantity: parseInt(formData.stockQuantity), // API will map this to stock_quantity
         weight: formData.weight ? parseFloat(formData.weight) : null,
-        sizeOptions: formData.sizeOptions ? JSON.parse(formData.sizeOptions) : null,
-        colorOptions: formData.colorOptions ? JSON.parse(formData.colorOptions) : null,
+        careInstructions: formData.careInstructions, // API will map this to care_instructions
+        isFeatured: formData.isFeatured, // API will map this to is_featured
+        isBestseller: formData.isBestseller, // API will map this to is_bestseller
+        isNewArrival: formData.isNewArrival, // API will map this to is_new_arrival
+        isActive: formData.isActive, // API will map this to is_active
+        metaTitle: formData.metaTitle, // API will map this to meta_title
+        metaDescription: formData.metaDescription, // API will map this to meta_description
+        metaKeywords: formData.metaKeywords, // API will map this to meta_keywords
         images: formData.images.filter(img => img.url.trim() !== '')
       }
 

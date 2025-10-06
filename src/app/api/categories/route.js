@@ -12,6 +12,12 @@ export async function GET(request) {
       where: {
         is_active: true
       },
+      include: {
+        subcategories: {
+          where: { is_active: true },
+          orderBy: { name: 'asc' }
+        }
+      },
       orderBy: {
         name: 'asc'
       }

@@ -87,6 +87,7 @@ async function handler(request, context, user) {
           description: true,
           short_description: true,
           category_id: true,
+          subcategory_id: true,
           price: true,
           original_price: true,
           discount_percentage: true,
@@ -100,7 +101,29 @@ async function handler(request, context, user) {
           is_new_arrival: true,
           is_active: true,
           created_at: true,
-          updated_at: true
+          updated_at: true,
+          category: {
+            select: {
+              id: true,
+              name: true,
+              slug: true
+            }
+          },
+          subcategory: {
+            select: {
+              id: true,
+              name: true,
+              slug: true
+            }
+          },
+          images: {
+            select: {
+              id: true,
+              image_url: true,
+              alt_text: true,
+              is_primary: true
+            }
+          }
         },
         orderBy,
         skip: offset,
@@ -158,33 +181,33 @@ async function createProductHandler(request, context, user) {
     const slug = body.slug || body.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')
     
     // Create product
-    const product = await prisma.product.create({
+    const product = await prisma.products.create({
       data: {
         name: body.name,
         slug,
         description: body.description,
-        shortDescription: body.shortDescription,
-        categoryId: parseInt(body.categoryId),
+        short_description: body.shortDescription,
+        category_id: parseInt(body.categoryId),
         price: parseFloat(body.price),
-        originalPrice: body.originalPrice ? parseFloat(body.originalPrice) : null,
-        discountPercentage: body.discountPercentage ? parseFloat(body.discountPercentage) : 0,
+        original_price: body.originalPrice ? parseFloat(body.originalPrice) : null,
+        discount_percentage: body.discountPercentage ? parseFloat(body.discountPercentage) : 0,
         sku: body.sku,
         brand: body.brand,
         material: body.material,
-        sizeOptions: body.sizeOptions ? JSON.stringify(body.sizeOptions) : null,
-        colorOptions: body.colorOptions ? JSON.stringify(body.colorOptions) : null,
+        size_options: body.sizeOptions ? JSON.stringify(body.sizeOptions) : null,
+        color_options: body.colorOptions ? JSON.stringify(body.colorOptions) : null,
         availability: body.availability || 'In Stock',
-        stockQuantity: parseInt(body.stockQuantity) || 0,
+        stock_quantity: parseInt(body.stockQuantity) || 0,
         weight: body.weight ? parseFloat(body.weight) : null,
         dimensions: body.dimensions ? JSON.stringify(body.dimensions) : null,
-        careInstructions: body.careInstructions,
-        isFeatured: body.isFeatured === 'true' || body.isFeatured === true,
-        isBestseller: body.isBestseller === 'true' || body.isBestseller === true,
-        isNewArrival: body.isNewArrival === 'true' || body.isNewArrival === true,
-        isActive: body.isActive !== 'false' && body.isActive !== false,
-        metaTitle: body.metaTitle,
-        metaDescription: body.metaDescription,
-        metaKeywords: body.metaKeywords
+        care_instructions: body.careInstructions,
+        is_featured: body.isFeatured === 'true' || body.isFeatured === true,
+        is_bestseller: body.isBestseller === 'true' || body.isBestseller === true,
+        is_new_arrival: body.isNewArrival === 'true' || body.isNewArrival === true,
+        is_active: body.isActive !== 'false' && body.isActive !== false,
+        meta_title: body.metaTitle,
+        meta_description: body.metaDescription,
+        meta_keywords: body.metaKeywords
       },
       include: {
         category: true,
@@ -196,13 +219,13 @@ async function createProductHandler(request, context, user) {
     if (body.images && body.images.length > 0) {
       await Promise.all(
         body.images.map((imageData, index) =>
-          prisma.productImage.create({
+          prisma.product_images.create({
             data: {
-              productId: product.id,
-              imageUrl: imageData.url,
-              altText: imageData.alt || product.name,
-              isPrimary: imageData.isPrimary || index === 0,
-              sortOrder: imageData.sortOrder || index + 1
+              product_id: product.id,
+              image_url: imageData.url,
+              alt_text: imageData.alt || product.name,
+              is_primary: imageData.isPrimary || index === 0,
+              sort_order: imageData.sortOrder || index + 1
             }
           })
         )
@@ -210,12 +233,12 @@ async function createProductHandler(request, context, user) {
     }
     
     // Fetch the complete product with images
-    const completeProduct = await prisma.product.findUnique({
+    const completeProduct = await prisma.products.findUnique({
       where: { id: product.id },
       include: {
         category: true,
         images: {
-          orderBy: { sortOrder: 'asc' }
+          orderBy: { sort_order: 'asc' }
         }
       }
     })
