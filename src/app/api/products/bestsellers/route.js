@@ -7,15 +7,15 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url)
     const limit = parseInt(searchParams.get('limit')) || 8
     
-    const bestsellerProducts = await prisma.product.findMany({
+    const bestsellerProducts = await prisma.products.findMany({
       where: {
-        isBestseller: true,
-        isActive: true
+        is_bestseller: true,
+        is_active: true
       },
       include: {
         category: true,
         images: {
-          orderBy: { sortOrder: 'asc' }
+          orderBy: { sort_order: 'asc' }
         },
         _count: {
           select: {
@@ -24,14 +24,24 @@ export async function GET(request) {
         }
       },
       orderBy: {
-        createdAt: 'desc'
+        created_at: 'desc'
       },
       take: limit
     })
     
+    // Convert Decimal objects to numbers for JSON serialization
+    const formattedProducts = bestsellerProducts.map(product => ({
+      ...product,
+      price: parseFloat(product.price),
+      original_price: product.original_price ? parseFloat(product.original_price) : null,
+      discount_percentage: product.discount_percentage ? parseFloat(product.discount_percentage) : null,
+      weight: product.weight ? parseFloat(product.weight) : null,
+      stock_quantity: product.stock_quantity || 0
+    }))
+    
     return NextResponse.json({
       success: true,
-      data: bestsellerProducts
+      data: formattedProducts
     })
     
   } catch (error) {

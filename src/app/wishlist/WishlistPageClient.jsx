@@ -1,4 +1,5 @@
 "use client";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Heart, Trash2, ShoppingBag } from "lucide-react";
 import { useWishlist } from "@/hooks/useWishlist";
@@ -7,26 +8,43 @@ import { useCart } from "@/hooks/useCart";
 const WishlistPageClient = () => {
   const { items: wishlistItems, removeItem, count } = useWishlist();
   const { addItem: addToCart, isInCart } = useCart();
+  const [mounted, setMounted] = useState(false);
+
+  // Fix hydration issue - only show count after client mount
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <section className="py-20 px-4 min-h-screen bg-neutral-50">
       <h2 className="text-xl md:text-2xl font-extrabold text-gray-900 text-center mb-12 relative">
-        My Wishlist ❤️ ({count})
+        My Wishlist ❤️ ({mounted ? count : '...'})
         <span className="absolute left-1/2 transform -translate-x-1/2 bottom-[-15px] w-20 h-1.5 bg-gradient-to-r from-yellow-500 to-amber-600 rounded-full"></span>
       </h2>
 
       {wishlistItems.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
-          {wishlistItems.map((item) => (
-            <div
-              key={item.id}
-              className="group relative bg-white/90 backdrop-blur-xl rounded-3xl overflow-hidden 
-                         shadow-[0_8px_32px_rgba(0,0,0,0.08)] 
-                         hover:shadow-[0_20px_60px_rgba(0,0,0,0.15)]
-                         transition-all duration-500 ease-out
-                         border border-white/20
-                         hover:-translate-y-2"
-            >
+          {wishlistItems.map((item) => {
+            // Convert prices to numbers to handle Decimal objects or strings
+            const discountedPrice = parseFloat(item.discountedPrice) || parseFloat(item.price) || 0;
+            const originalPrice = parseFloat(item.originalPrice) || parseFloat(item.price) || 0;
+            const discountPercentage = originalPrice > 0 
+              ? ((1 - discountedPrice / originalPrice) * 100).toFixed(0) 
+              : 0;
+            
+            // Get image URL with fallback
+            const imageUrl = item.image || item.images?.[0]?.image_url || '/images/placeholder.jpg';
+            
+            return (
+              <div
+                key={item.id}
+                className="group relative bg-white/90 backdrop-blur-xl rounded-3xl overflow-hidden 
+                           shadow-[0_8px_32px_rgba(0,0,0,0.08)] 
+                           hover:shadow-[0_20px_60px_rgba(0,0,0,0.15)]
+                           transition-all duration-500 ease-out
+                           border border-white/20
+                           hover:-translate-y-2"
+              >
               {/* Glassmorphism Background */}
               <div className="absolute inset-0 bg-gradient-to-br from-white/60 via-white/40 to-transparent 
                               backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
@@ -44,14 +62,20 @@ const WishlistPageClient = () => {
 
               {/* Product Image */}
               <div className="relative w-full h-80 overflow-hidden">
-                <Image
-                  src={item.image}
-                  alt={item.name}
-                  fill
-                  className="object-cover transition-all duration-700 ease-out 
-                             group-hover:scale-110 group-hover:rotate-1"
-                  priority={item.id === 1}
-                />
+                {imageUrl ? (
+                  <Image
+                    src={imageUrl}
+                    alt={item.name || 'Product'}
+                    fill
+                    className="object-cover transition-all duration-700 ease-out 
+                               group-hover:scale-110 group-hover:rotate-1"
+                    priority={item.id === 1}
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+                    <span className="text-gray-400 text-sm">No Image</span>
+                  </div>
+                )}
                 
                 {/* Gradient Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent 
@@ -87,20 +111,21 @@ const WishlistPageClient = () => {
                   <div className="flex items-center space-x-2">
                     <span className="text-xl font-bold bg-gradient-to-r from-amber-600 to-yellow-600 
                                      bg-clip-text text-transparent">
-                      ₹{item.discountedPrice.toFixed(2)}
+                      ₹{discountedPrice.toFixed(2)}
                     </span>
-                    <span className="text-sm text-gray-400 line-through">
-                      ₹{item.originalPrice.toFixed(2)}
-                    </span>
+                    {originalPrice > discountedPrice && (
+                      <span className="text-sm text-gray-400 line-through">
+                        ₹{originalPrice.toFixed(2)}
+                      </span>
+                    )}
                   </div>
-                  <span className="text-xs bg-gradient-to-r from-red-100 to-pink-100 
-                                   text-red-600 font-bold px-3 py-1 rounded-full
-                                   border border-red-200/50">
-                    {(
-                      (1 - item.discountedPrice / item.originalPrice) *
-                      100
-                    ).toFixed(0)}% OFF
-                  </span>
+                  {originalPrice > discountedPrice && (
+                    <span className="text-xs bg-gradient-to-r from-red-100 to-pink-100 
+                                     text-red-600 font-bold px-3 py-1 rounded-full
+                                     border border-red-200/50">
+                      {discountPercentage}% OFF
+                    </span>
+                  )}
                 </div>
 
                 {/* Action Buttons */}
@@ -128,7 +153,8 @@ const WishlistPageClient = () => {
                 </div>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       ) : (
         <p className="text-center text-neutral-600 mt-16 text-lg">

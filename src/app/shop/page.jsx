@@ -1,9 +1,3 @@
-import { useState } from "react";
-import Image from "next/image";
-import { Heart, ShoppingCart } from "lucide-react";
-import Link from "next/link";
-import { useWishlist } from "@/hooks/useWishlist";
-import { useCart } from "@/hooks/useCart";
 import ShopPageClient from "./ShopPageClient";
 
 export const metadata = {

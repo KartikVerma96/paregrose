@@ -1,10 +1,14 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import AdminLayout from '@/components/admin/AdminLayout'
 import { useAlert } from '@/contexts/AlertContext'
+import { Search, Filter, RefreshCw, Package, Tag, XCircle, Grid, List } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 
 export default function ProductsPage() {
+  const router = useRouter()
   const [products, setProducts] = useState([])
   const [categories, setCategories] = useState([])
   const [subcategories, setSubcategories] = useState([])
@@ -236,27 +240,31 @@ export default function ProductsPage() {
               <div className="flex items-center bg-white rounded-lg border border-gray-200 p-1">
                 <button
                   onClick={() => setViewMode('table')}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 flex items-center gap-2 ${
                     viewMode === 'table'
                       ? 'bg-emerald-500 text-white shadow-md'
                       : 'text-gray-600 hover:text-gray-900'
                   }`}
+                  title="Table View"
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M3 14h18m-9-4v8m-7 0V4a1 1 0 011-1h18a1 1 0 011 1v16a1 1 0 01-1 1H4a1 1 0 01-1-1z" />
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
+                  <span className="hidden sm:inline">Table</span>
                 </button>
                 <button
                   onClick={() => setViewMode('cards')}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 flex items-center gap-2 ${
                     viewMode === 'cards'
                       ? 'bg-emerald-500 text-white shadow-md'
                       : 'text-gray-600 hover:text-gray-900'
                   }`}
+                  title="Grid View"
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
                   </svg>
+                  <span className="hidden sm:inline">Grid</span>
                 </button>
               </div>
               <a
@@ -272,117 +280,174 @@ export default function ProductsPage() {
           </div>
         </div>
 
-        {/* Search and Bulk Actions */}
-        <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-            <div className="flex-1 max-w-md">
-              <label className="block text-sm font-semibold text-gray-700 mb-3">
-                🔍 Search Products
+        {/* Search and Filters */}
+        <div className="bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-xl p-6 border-2 border-gray-200">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-xl shadow-md">
+                <Filter className="w-5 h-5 text-white" strokeWidth={2.5} />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-gray-900">Search & Filter</h2>
+                <p className="text-xs text-gray-500">Find products by name, brand, or category</p>
+              </div>
+            </div>
+            {(searchTerm || selectedCategory) && (
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                className="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-bold"
+              >
+                Filters Active
+              </motion.div>
+            )}
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Search Input */}
+            <div>
+              <label className="block text-xs font-bold text-gray-700 mb-2.5 flex items-center gap-2">
+                <Search className="w-4 h-4 text-emerald-600" strokeWidth={2.5} />
+                Search Products
               </label>
               <div className="relative">
                 <input
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Search by name, SKU, brand, or description..."
-                  className="w-full px-4 py-3 pl-12 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200 bg-gray-50 focus:bg-white"
+                  placeholder="Search by name, brand, or description..."
+                  className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all bg-white font-medium text-sm placeholder:text-gray-400"
                 />
-                <svg className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 {searchTerm && (
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
                     onClick={() => setSearchTerm('')}
-                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
+                    <XCircle className="w-4 h-4" />
+                  </motion.button>
                 )}
               </div>
             </div>
-            
-            <div className="flex-1 max-w-md">
-              <label className="block text-sm font-semibold text-gray-700 mb-3">
-                📂 Filter by Category
+
+            {/* Category Filter */}
+            <div>
+              <label className="block text-xs font-bold text-gray-700 mb-2.5 flex items-center gap-2">
+                <Tag className="w-4 h-4 text-emerald-600" strokeWidth={2.5} />
+                Filter by Category
               </label>
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200 bg-gray-50 focus:bg-white"
-              >
-                <option value="">All Categories</option>
-                {categories.map((category) => (
-                  <option key={category.id} value={category.slug}>
-                    {category.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="flex items-end gap-4">
-              <button
-                onClick={() => {
-                  setSearchTerm('')
-                  setSelectedCategory('')
-                  setCurrentPage(1)
-                }}
-                className="bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200 cursor-pointer flex items-center gap-2 shadow-md hover:shadow-lg"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-                Clear Filters
-              </button>
-            </div>
-          </div>
-
-          {/* Bulk Actions */}
-          {selectedProducts.length > 0 && (
-            <div className="mt-6 pt-6 border-t border-gray-200">
-              <div className="flex items-center justify-between">
-                <div className="bg-emerald-50 px-4 py-2 rounded-lg border border-emerald-200">
-                  <span className="text-sm font-semibold text-emerald-700">
-                    {selectedProducts.length} products selected
-                  </span>
-                </div>
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => handleBulkAction('activate')}
-                    className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 cursor-pointer flex items-center gap-2 shadow-md hover:shadow-lg"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                    Activate
-                  </button>
-                  <button
-                    onClick={() => handleBulkAction('deactivate')}
-                    className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 cursor-pointer flex items-center gap-2 shadow-md hover:shadow-lg"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                    Deactivate
-                  </button>
-                  <button
-                    onClick={() => {
-                      setSelectedProducts([])
-                      setSelectAll(false)
-                    }}
-                    className="bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 cursor-pointer flex items-center gap-2 shadow-md hover:shadow-lg"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                    Clear
-                  </button>
+              <div className="relative">
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="w-full appearance-none pl-4 pr-10 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all cursor-pointer bg-white font-semibold text-sm"
+                >
+                  <option value="">All Categories</option>
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.slug}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* Active Filters Summary */}
+          {(searchTerm || selectedCategory) && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="mt-5 pt-5 border-t-2 border-gray-200"
+            >
+              <div className="flex items-center justify-between flex-wrap gap-3">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-xs font-bold text-gray-600">Active Filters:</span>
+                  {searchTerm && (
+                    <span className="inline-flex items-center gap-1.5 bg-emerald-100 text-emerald-700 px-3 py-1.5 rounded-lg text-xs font-bold">
+                      <Search className="w-3 h-3" />
+                      "{searchTerm}"
+                    </span>
+                  )}
+                  {selectedCategory && (
+                    <span className="inline-flex items-center gap-1.5 bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg text-xs font-bold">
+                      <Tag className="w-3 h-3" />
+                      {categories.find(c => c.slug === selectedCategory)?.name || selectedCategory}
+                    </span>
+                  )}
+                </div>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => {
+                    setSearchTerm('')
+                    setSelectedCategory('')
+                    setCurrentPage(1)
+                  }}
+                  className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white px-5 py-2 rounded-xl font-bold text-sm transition-all duration-200 shadow-md hover:shadow-lg cursor-pointer flex items-center gap-2"
+                >
+                  <XCircle className="w-4 h-4" />
+                  Clear All Filters
+                </motion.button>
+              </div>
+            </motion.div>
           )}
         </div>
+
+        {/* Bulk Actions */}
+        <AnimatePresence>
+          {selectedProducts.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="bg-gradient-to-r from-emerald-50 to-teal-50 border-2 border-emerald-300 rounded-xl p-5 shadow-lg"
+            >
+              <div className="flex items-center justify-between flex-wrap gap-4">
+                <div className="bg-emerald-600 text-white px-4 py-2 rounded-full font-bold text-sm shadow-md">
+                  {selectedProducts.length} Selected
+                </div>
+                <div className="flex gap-2 flex-wrap">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => handleBulkAction('activate')}
+                    className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-4 py-2 rounded-lg text-xs font-bold transition-all duration-200 cursor-pointer flex items-center gap-1.5 shadow-md hover:shadow-lg"
+                  >
+                    <CheckCircle className="w-3.5 h-3.5" />
+                    Activate
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => handleBulkAction('deactivate')}
+                    className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-4 py-2 rounded-lg text-xs font-bold transition-all duration-200 cursor-pointer flex items-center gap-1.5 shadow-md hover:shadow-lg"
+                  >
+                    <XCircle className="w-3.5 h-3.5" />
+                    Deactivate
+                  </motion.button>
+                </div>
+                <button
+                  onClick={() => {
+                    setSelectedProducts([])
+                    setSelectAll(false)
+                  }}
+                  className="text-emerald-700 hover:text-emerald-900 text-sm font-semibold underline cursor-pointer"
+                >
+                  Clear Selection
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Products Display */}
         <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
@@ -461,7 +526,7 @@ export default function ProductsPage() {
                               <div className="flex-shrink-0 h-12 w-12">
                                 <img
                                   className="h-12 w-12 rounded-lg object-cover shadow-sm"
-                                  src={product.images?.[0]?.imageUrl || '/images/placeholder.jpg'}
+                                  src={product.images?.[0]?.image_url || product.images?.[0]?.imageUrl || '/images/carousel/pic_1.jpg'}
                                   alt={product.name}
                                 />
                               </div>
@@ -470,7 +535,7 @@ export default function ProductsPage() {
                                   {product.name}
                                 </div>
                                 <div className="text-sm text-gray-500">
-                                  SKU: {product.sku || 'N/A'}
+                                  ID: {product.id}
                                 </div>
                               </div>
                             </div>
@@ -532,15 +597,18 @@ export default function ProductsPage() {
                         </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             <div className="flex items-center space-x-3">
-                              <a
-                                href={`/admin/products/${product.id}/edit`}
+                              <button
+                                onClick={() => {
+                                  console.log('🖱️ Edit button clicked for product:', product.id)
+                                  router.push(`/admin/products/${product.id}/edit`)
+                                }}
                                 className="bg-gradient-to-r from-emerald-400 to-teal-400 text-white px-3 py-1 rounded-lg text-xs font-semibold hover:from-emerald-500 hover:to-teal-500 transition-all duration-200 cursor-pointer flex items-center gap-1 shadow-md hover:shadow-lg"
                               >
                                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                 </svg>
                                 Edit
-                              </a>
+                              </button>
                               
                               <button
                                 onClick={() => toggleFeature(product.id, 'is_featured', product.is_featured)}
@@ -606,7 +674,7 @@ export default function ProductsPage() {
                             {product.name}
                           </h3>
                           <p className="text-sm text-gray-500 mb-2">
-                            SKU: {product.sku || 'N/A'}
+                            ID: {product.id}
                           </p>
                           <p className="text-sm text-gray-600">
                             {product.category?.name || 'Uncategorized'}
@@ -623,7 +691,7 @@ export default function ProductsPage() {
                       <div className="mb-4">
                         <img
                           className="w-full h-48 object-cover rounded-lg shadow-sm"
-                          src={product.images?.[0]?.imageUrl || '/images/placeholder.jpg'}
+                          src={product.images?.[0]?.image_url || product.images?.[0]?.imageUrl || '/images/carousel/pic_1.jpg'}
                           alt={product.name}
                         />
                       </div>
@@ -678,12 +746,15 @@ export default function ProductsPage() {
                           {product.isActive ? 'Active' : 'Inactive'}
                         </span>
                         <div className="flex space-x-2">
-                          <a
-                            href={`/admin/products/${product.id}/edit`}
+                          <button
+                            onClick={() => {
+                              console.log('🖱️ Edit button clicked for product:', product.id)
+                              router.push(`/admin/products/${product.id}/edit`)
+                            }}
                             className="bg-gradient-to-r from-emerald-400 to-teal-400 text-white px-3 py-1 rounded-lg text-xs font-semibold hover:from-emerald-500 hover:to-teal-500 transition-all duration-200 cursor-pointer flex items-center gap-1 shadow-md hover:shadow-lg"
                           >
                             Edit
-                          </a>
+                          </button>
                           <button
                             onClick={() => handleDelete(product.id)}
                             className="bg-gradient-to-r from-red-400 to-red-500 text-white px-3 py-1 rounded-lg text-xs font-semibold hover:from-red-500 hover:to-red-600 transition-all duration-200 cursor-pointer flex items-center gap-1 shadow-md hover:shadow-lg"

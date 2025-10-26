@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db'
 // GET /api/products - Get all products with filtering and search
 export async function GET(request) {
   try {
+    console.log('🔍 GET /api/products called');
     const { searchParams } = new URL(request.url)
     
     // Query parameters
@@ -20,12 +21,14 @@ export async function GET(request) {
     const sortBy = searchParams.get('sortBy') || 'createdAt'
     const sortOrder = searchParams.get('sortOrder') || 'desc'
     
+    console.log('📊 Query params:', { page, limit, category, search });
+    
     // Calculate offset for pagination
     const offset = (page - 1) * limit
     
     // Build where clause
     const where = {
-      isActive: true
+      is_active: true
     }
     
     // Add category filter
@@ -40,21 +43,21 @@ export async function GET(request) {
       where.OR = [
         { name: { contains: search, mode: 'insensitive' } },
         { description: { contains: search, mode: 'insensitive' } },
-        { shortDescription: { contains: search, mode: 'insensitive' } },
+        { short_description: { contains: search, mode: 'insensitive' } },
         { brand: { contains: search, mode: 'insensitive' } },
         { sku: { contains: search, mode: 'insensitive' } }
       ]
     }
     
-    // Add price range filter
-    if (minPrice !== null && maxPrice !== null) {
+    // Add price range filter (only if valid numbers)
+    if (!isNaN(minPrice) && !isNaN(maxPrice)) {
       where.price = {
         gte: minPrice,
         lte: maxPrice
       }
-    } else if (minPrice !== null) {
+    } else if (!isNaN(minPrice)) {
       where.price = { gte: minPrice }
-    } else if (maxPrice !== null) {
+    } else if (!isNaN(maxPrice)) {
       where.price = { lte: maxPrice }
     }
     
@@ -64,9 +67,9 @@ export async function GET(request) {
     }
     
     // Add feature filters
-    if (isFeatured) where.isFeatured = true
-    if (isBestseller) where.isBestseller = true
-    if (isNewArrival) where.isNewArrival = true
+    if (isFeatured) where.is_featured = true
+    if (isBestseller) where.is_bestseller = true
+    if (isNewArrival) where.is_new_arrival = true
     
     // Build orderBy clause
     const orderBy = {}
@@ -75,19 +78,26 @@ export async function GET(request) {
     } else if (sortBy === 'name') {
       orderBy.name = sortOrder
     } else if (sortBy === 'createdAt') {
-      orderBy.createdAt = sortOrder
+      orderBy.created_at = sortOrder
     } else {
-      orderBy.createdAt = 'desc'
+      orderBy.created_at = 'desc'
     }
+    
+    console.log('🔎 Where clause:', JSON.stringify(where, null, 2));
+    console.log('📑 OrderBy:', JSON.stringify(orderBy, null, 2));
     
     // Execute query with pagination
     const [products, totalCount] = await Promise.all([
-      prisma.product.findMany({
+      prisma.products.findMany({
         where,
         include: {
           category: true,
+          subcategory: true,
           images: {
-            orderBy: { sortOrder: 'asc' }
+            orderBy: [
+              { is_primary: 'desc' },  // Primary images first
+              { sort_order: 'asc' }     // Then by sort order
+            ]
           },
           _count: {
             select: {
@@ -99,8 +109,11 @@ export async function GET(request) {
         skip: offset,
         take: limit
       }),
-      prisma.product.count({ where })
+      prisma.products.count({ where })
     ])
+    
+    console.log('✅ Products found:', products.length);
+    console.log('📊 Total count:', totalCount);
     
     // Calculate pagination info
     const totalPages = Math.ceil(totalCount / limit)
@@ -123,9 +136,13 @@ export async function GET(request) {
     })
     
   } catch (error) {
-    console.error('Error fetching products:', error)
+    console.error('❌ Error fetching products:', error)
+    console.error('❌ Error name:', error.name)
+    console.error('❌ Error message:', error.message)
+    console.error('❌ Error code:', error.code)
+    console.error('❌ Error stack:', error.stack)
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch products' },
+      { success: false, error: error.message || 'Failed to fetch products' },
       { status: 500 }
     )
   }

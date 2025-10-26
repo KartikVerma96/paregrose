@@ -93,14 +93,16 @@ const AdminLayout = ({ children }) => {
         <nav className="mt-6 px-3">
           <div className="space-y-1">
             {navItems.map((item) => {
-              const isActive = currentPath === item.href
+              // Check if current path starts with the item's href (for nested routes)
+              const isActive = currentPath === item.href || 
+                               (item.href !== '/admin' && currentPath.startsWith(item.href + '/'))
               return (
                 <a
                   key={item.name}
                   href={item.href}
                   className={`group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 cursor-pointer ${
                     isActive
-                      ? 'bg-amber-100 text-amber-900 border-r-2 border-amber-600'
+                      ? 'bg-amber-100 text-amber-900 border-r-4 border-amber-600'
                       : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
                   }`}
                 >

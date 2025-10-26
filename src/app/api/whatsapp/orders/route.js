@@ -82,10 +82,12 @@ export async function GET(request) {
                   id: true,
                   name: true,
                   slug: true,
-                  images: {
-                    where: { isPrimary: true },
-                    select: { imageUrl: true }
-                  }
+                images: {
+                  where: { is_primary: true },
+                  select: { image_url: true },
+                  orderBy: { sort_order: 'asc' },
+                  take: 1
+                }
                 }
               }
             }

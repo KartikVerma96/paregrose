@@ -174,26 +174,26 @@ export function formatCartItemForDisplay(cartItem) {
     productId: product.id,
     name: product.name,
     slug: product.slug,
-    price: cartItem.priceAtTime,
-    formattedPrice: `₹${parseFloat(cartItem.priceAtTime).toLocaleString('en-IN')}`,
+    price: parseFloat(cartItem.price_at_time),
+    formattedPrice: `₹${parseFloat(cartItem.price_at_time).toLocaleString('en-IN')}`,
     quantity: cartItem.quantity,
-    selectedSize: cartItem.selectedSize,
-    selectedColor: cartItem.selectedColor,
-    totalPrice: cartItem.priceAtTime * cartItem.quantity,
-    formattedTotalPrice: `₹${(cartItem.priceAtTime * cartItem.quantity).toLocaleString('en-IN')}`,
-    image: primaryImage?.imageUrl || '/images/placeholder.jpg',
+    selectedSize: cartItem.selected_size,
+    selectedColor: cartItem.selected_color,
+    totalPrice: parseFloat(cartItem.price_at_time) * cartItem.quantity,
+    formattedTotalPrice: `₹${(parseFloat(cartItem.price_at_time) * cartItem.quantity).toLocaleString('en-IN')}`,
+    image: primaryImage?.image_url || primaryImage?.imageUrl || null,
     category: product.category?.name,
     availability: product.availability,
-    stockQuantity: product.stockQuantity,
-    createdAt: cartItem.createdAt,
-    updatedAt: cartItem.updatedAt
+    stockQuantity: product.stock_quantity,
+    createdAt: cartItem.created_at,
+    updatedAt: cartItem.updated_at
   }
 }
 
 // Helper function to calculate cart totals
 export function calculateCartTotals(cartItems) {
   const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0)
-  const totalAmount = cartItems.reduce((sum, item) => sum + (item.priceAtTime * item.quantity), 0)
+  const totalAmount = cartItems.reduce((sum, item) => sum + (parseFloat(item.price_at_time) * item.quantity), 0)
   
   return {
     totalItems,

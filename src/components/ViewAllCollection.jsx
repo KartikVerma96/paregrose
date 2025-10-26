@@ -27,19 +27,39 @@ const ViewAllCollection = () => {
   ];
 
   return (
-    <section className="py-6 sm:py-8 md:py-10 lg:py-12 px-6 sm:px-8 md:px-10 lg:px-12">
-      <motion.h2
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        viewport={{ once: true }}
-        className="text-xl md:text-2xl font-extrabold text-gray-900 text-center mb-12 relative"
-      >
-        View All Collections
-        <span className="absolute left-1/2 transform -translate-x-1/2 bottom-[-6px] sm:bottom-[-8px] md:bottom-[-10px] lg:bottom-[-12px] w-12 sm:w-14 md:w-16 lg:w-20 h-1 sm:h-1.5 bg-gradient-to-r from-yellow-500 to-amber-600 rounded-full"></span>
-      </motion.h2>
+    <section className="py-16 sm:py-20 px-6 sm:px-8 md:px-10 lg:px-12 bg-gradient-to-b from-white via-amber-50/30 to-white">
+      <div className="max-w-7xl mx-auto">
+        {/* Enhanced Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
+          className="text-center mb-12 sm:mb-16"
+        >
+          <div className="inline-block mb-3">
+            <span className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-100 to-pink-100 
+                           rounded-full text-purple-700 text-xs sm:text-sm font-bold uppercase tracking-wider border-2 border-purple-200">
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
+              </svg>
+              Explore Categories
+            </span>
+          </div>
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold mb-4 bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 bg-clip-text text-transparent">
+            View All Collections
+          </h2>
+          <p className="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto">
+            Browse through our curated collections and find the perfect style for every occasion
+          </p>
+          <div className="mt-4 flex items-center justify-center gap-2">
+            <div className="h-1 w-20 bg-gradient-to-r from-transparent via-purple-500 to-transparent rounded-full"></div>
+            <div className="h-1 w-2 bg-purple-500 rounded-full"></div>
+            <div className="h-1 w-20 bg-gradient-to-r from-transparent via-purple-500 to-transparent rounded-full"></div>
+          </div>
+        </motion.div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-10 md:gap-12 lg:gap-16 max-w-7xl mx-auto">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-10 md:gap-12 lg:gap-16">
         {loading ? (
           // Loading skeleton
           Array.from({ length: 8 }).map((_, index) => (
@@ -137,6 +157,7 @@ const ViewAllCollection = () => {
             <p className="text-gray-500">Categories will appear here once they are added by the admin.</p>
           </div>
         )}
+      </div>
       </div>
     </section>
   );

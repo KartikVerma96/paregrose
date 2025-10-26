@@ -115,7 +115,7 @@ export function formatWishlistItemForDisplay(wishlistItem) {
     discountPercentage: product.originalPrice && product.originalPrice > product.price 
       ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
       : 0,
-    image: primaryImage?.imageUrl || '/images/placeholder.jpg',
+    image: primaryImage?.imageUrl || '/images/carousel/pic_1.jpg',
     category: product.category?.name,
     availability: product.availability,
     stockQuantity: product.stockQuantity,

@@ -74,9 +74,9 @@ export const AlertProvider = ({ children }) => {
       {children}
       
       {/* Render all alerts */}
-      <div className="fixed top-4 right-4 z-50 space-y-2 pointer-events-none">
-        {alerts.map((alert, index) => (
-          <div key={alert.id} className="pointer-events-auto" style={{ transform: `translateY(${index * 10}px)` }}>
+      <div className="fixed top-6 right-6 z-[9999] flex flex-col gap-3 pointer-events-none max-w-md w-full">
+        {alerts.map((alert) => (
+          <div key={alert.id} className="pointer-events-auto">
             <Alert
               {...alert}
               onClose={() => hideAlert(alert.id)}

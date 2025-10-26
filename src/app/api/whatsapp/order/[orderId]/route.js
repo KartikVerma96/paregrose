@@ -32,8 +32,10 @@ export async function GET(request, { params }) {
                 slug: true,
                 price: true,
                 images: {
-                  where: { isPrimary: true },
-                  select: { imageUrl: true }
+                  where: { is_primary: true },
+                  select: { image_url: true },
+                  orderBy: { sort_order: 'asc' },
+                  take: 1
                 }
               }
             }
@@ -136,8 +138,10 @@ export async function PUT(request, { params }) {
                 slug: true,
                 price: true,
                 images: {
-                  where: { isPrimary: true },
-                  select: { imageUrl: true }
+                  where: { is_primary: true },
+                  select: { image_url: true },
+                  orderBy: { sort_order: 'asc' },
+                  take: 1
                 }
               }
             }

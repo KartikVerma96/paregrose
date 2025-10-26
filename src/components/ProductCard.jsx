@@ -3,14 +3,21 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Heart } from 'lucide-react';
 import { useWishlist } from '@/hooks/useWishlist';
-import { useCart } from '@/hooks/useCart';
+import { useCartDBRedux } from '@/hooks/useCartDBRedux';
 import { useAlert } from '@/contexts/AlertContext';
 
 const ProductCard = ({ product }) => {
   // Always call hooks to maintain consistent order
   const { toggleWishlist, isInWishlist } = useWishlist();
-  const { addItem: addToCart, isInCart } = useCart();
+  const { addItem: addToCart, isInCart } = useCartDBRedux();
   const { showSuccess, showWarning } = useAlert();
+
+  // Convert prices to numbers to handle Decimal objects or strings
+  const discountedPrice = parseFloat(product.discountedPrice) || parseFloat(product.price) || 0;
+  const originalPrice = parseFloat(product.originalPrice) || parseFloat(product.price) || 0;
+  const discountPercentage = originalPrice > 0 
+    ? ((1 - discountedPrice / originalPrice) * 100).toFixed(0) 
+    : 0;
 
   return (
     <Link
@@ -79,15 +86,19 @@ const ProductCard = ({ product }) => {
            <div className="flex items-center justify-between mb-4">
              <div className="flex items-center space-x-2">
                <span className="text-lg font-bold text-amber-600">
-                 ₹{product.discountedPrice.toFixed(2)}
+                 ₹{discountedPrice.toFixed(2)}
                </span>
-               <span className="text-sm text-gray-400 line-through">
-                 ₹{product.originalPrice.toFixed(2)}
-               </span>
+               {originalPrice > discountedPrice && (
+                 <span className="text-sm text-gray-400 line-through">
+                   ₹{originalPrice.toFixed(2)}
+                 </span>
+               )}
              </div>
-             <span className="text-xs bg-red-100 text-red-600 font-bold px-2 py-1 rounded-full">
-               {((1 - product.discountedPrice / product.originalPrice) * 100).toFixed(0)}% OFF
-             </span>
+             {originalPrice > discountedPrice && (
+               <span className="text-xs bg-red-100 text-red-600 font-bold px-2 py-1 rounded-full">
+                 {discountPercentage}% OFF
+               </span>
+             )}
            </div>
           
            {/* Add to Cart Button */}

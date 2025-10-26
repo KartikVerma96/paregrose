@@ -5,26 +5,40 @@ import { createAdminRoute, USER_ROLES } from '@/lib/adminMiddleware'
 // GET /api/admin/products/[id] - Get single product for admin
 async function handler(request, context, user) {
   try {
-    const { params } = await context
+    const params = await context.params
     const { id } = params
+    
+    console.log('🔍 GET /api/admin/products/[id] - Fetching product with ID:', id)
+    console.log('📊 Parsed ID:', parseInt(id))
     
     const product = await prisma.products.findUnique({
       where: { id: parseInt(id) },
       include: {
         category: true,
+        subcategory: true,
         images: {
-          orderBy: { sort_order: 'asc' }
+          orderBy: [
+            { is_primary: 'desc' },
+            { sort_order: 'asc' }
+          ]
+        },
+        variants: {
+          orderBy: [
+            { size: 'asc' },
+            { color: 'asc' }
+          ]
         },
         _count: {
           select: {
-            cartItems: true,
-            wishlistItems: true,
-            whatsappOrderItems: true,
+            images: true,
+            cart_items: true,
             reviews: true
           }
         }
       }
     })
+    
+    console.log('✅ Product query result:', product ? `Found product: ${product.name}` : 'Product not found')
     
     if (!product) {
       return NextResponse.json(
@@ -39,9 +53,13 @@ async function handler(request, context, user) {
     })
     
   } catch (error) {
-    console.error('Error fetching product:', error)
+    console.error('❌ Error fetching product:', error)
+    console.error('❌ Error name:', error.name)
+    console.error('❌ Error message:', error.message)
+    console.error('❌ Error code:', error.code)
+    console.error('❌ Error stack:', error.stack)
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch product' },
+      { success: false, error: error.message || 'Failed to fetch product' },
       { status: 500 }
     )
   }
@@ -50,7 +68,7 @@ async function handler(request, context, user) {
 // PUT /api/admin/products/[id] - Update product (Admin only)
 async function updateProductHandler(request, context, user) {
   try {
-    const { params } = await context
+    const params = await context.params
     const { id } = params
     const body = await request.json()
     
@@ -71,38 +89,65 @@ async function updateProductHandler(request, context, user) {
       ? body.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')
       : existingProduct.slug
     
+    // Map availability to enum value
+    const availabilityMap = {
+      'In Stock': 'In_Stock',
+      'Out of Stock': 'Out_of_Stock',
+      'Limited Stock': 'Limited_Stock'
+    }
+    
+    // Map camelCase to snake_case for database fields
+    const updateData = {}
+    if (body.name !== undefined) updateData.name = body.name || existingProduct.name
+    if (slug !== existingProduct.slug) updateData.slug = slug
+    if (body.description !== undefined) updateData.description = body.description || null
+    if (body.shortDescription !== undefined) updateData.short_description = body.shortDescription || null
+    if (body.short_description !== undefined) updateData.short_description = body.short_description || null
+    if (body.categoryId !== undefined) updateData.category_id = parseInt(body.categoryId)
+    if (body.category_id !== undefined) updateData.category_id = parseInt(body.category_id)
+    if (body.subcategoryId !== undefined) updateData.subcategory_id = body.subcategoryId ? parseInt(body.subcategoryId) : null
+    if (body.subcategory_id !== undefined) updateData.subcategory_id = body.subcategory_id ? parseInt(body.subcategory_id) : null
+    if (body.price !== undefined) updateData.price = parseFloat(body.price)
+    if (body.originalPrice !== undefined) updateData.original_price = body.originalPrice ? parseFloat(body.originalPrice) : null
+    if (body.original_price !== undefined) updateData.original_price = body.original_price ? parseFloat(body.original_price) : null
+    if (body.discountPercentage !== undefined) updateData.discount_percentage = parseFloat(body.discountPercentage) || 0
+    if (body.discount_percentage !== undefined) updateData.discount_percentage = parseFloat(body.discount_percentage) || 0
+    if (body.sku !== undefined) updateData.sku = body.sku || null
+    if (body.brand !== undefined) updateData.brand = body.brand || null
+    if (body.material !== undefined) updateData.material = body.material || null
+    if (body.sizeOptions !== undefined) updateData.size_options = body.sizeOptions ? (typeof body.sizeOptions === 'string' ? body.sizeOptions : JSON.stringify(body.sizeOptions)) : null
+    if (body.size_options !== undefined) updateData.size_options = body.size_options ? (typeof body.size_options === 'string' ? body.size_options : JSON.stringify(body.size_options)) : null
+    if (body.colorOptions !== undefined) updateData.color_options = body.colorOptions ? (typeof body.colorOptions === 'string' ? body.colorOptions : JSON.stringify(body.colorOptions)) : null
+    if (body.color_options !== undefined) updateData.color_options = body.color_options ? (typeof body.color_options === 'string' ? body.color_options : JSON.stringify(body.color_options)) : null
+    if (body.availability !== undefined) updateData.availability = availabilityMap[body.availability] || 'In_Stock'
+    if (body.stockQuantity !== undefined) updateData.stock_quantity = parseInt(body.stockQuantity) || 0
+    if (body.stock_quantity !== undefined) updateData.stock_quantity = parseInt(body.stock_quantity) || 0
+    if (body.weight !== undefined) updateData.weight = body.weight ? parseFloat(body.weight) : null
+    if (body.dimensions !== undefined) updateData.dimensions = body.dimensions ? (typeof body.dimensions === 'string' ? body.dimensions : JSON.stringify(body.dimensions)) : null
+    if (body.careInstructions !== undefined) updateData.care_instructions = body.careInstructions || null
+    if (body.care_instructions !== undefined) updateData.care_instructions = body.care_instructions || null
+    if (body.isFeatured !== undefined) updateData.is_featured = body.isFeatured === 'true' || body.isFeatured === true
+    if (body.is_featured !== undefined) updateData.is_featured = body.is_featured === 'true' || body.is_featured === true
+    if (body.isBestseller !== undefined) updateData.is_bestseller = body.isBestseller === 'true' || body.isBestseller === true
+    if (body.is_bestseller !== undefined) updateData.is_bestseller = body.is_bestseller === 'true' || body.is_bestseller === true
+    if (body.isNewArrival !== undefined) updateData.is_new_arrival = body.isNewArrival === 'true' || body.isNewArrival === true
+    if (body.is_new_arrival !== undefined) updateData.is_new_arrival = body.is_new_arrival === 'true' || body.is_new_arrival === true
+    if (body.isActive !== undefined) updateData.is_active = body.isActive !== 'false' && body.isActive !== false
+    if (body.is_active !== undefined) updateData.is_active = body.is_active !== 'false' && body.is_active !== false
+    if (body.metaTitle !== undefined) updateData.meta_title = body.metaTitle || null
+    if (body.meta_title !== undefined) updateData.meta_title = body.meta_title || null
+    if (body.metaDescription !== undefined) updateData.meta_description = body.metaDescription || null
+    if (body.meta_description !== undefined) updateData.meta_description = body.meta_description || null
+    if (body.metaKeywords !== undefined) updateData.meta_keywords = body.metaKeywords || null
+    if (body.meta_keywords !== undefined) updateData.meta_keywords = body.meta_keywords || null
+    
     // Update product
     const updatedProduct = await prisma.products.update({
       where: { id: parseInt(id) },
-      data: {
-        name: body.name || existingProduct.name,
-        slug,
-        description: body.description !== undefined ? body.description : existingProduct.description,
-        shortDescription: body.shortDescription !== undefined ? body.shortDescription : existingProduct.shortDescription,
-        categoryId: body.categoryId ? parseInt(body.categoryId) : existingProduct.categoryId,
-        price: body.price ? parseFloat(body.price) : existingProduct.price,
-        originalPrice: body.originalPrice !== undefined ? (body.originalPrice ? parseFloat(body.originalPrice) : null) : existingProduct.originalPrice,
-        discountPercentage: body.discountPercentage !== undefined ? parseFloat(body.discountPercentage) : existingProduct.discountPercentage,
-        sku: body.sku !== undefined ? body.sku : existingProduct.sku,
-        brand: body.brand !== undefined ? body.brand : existingProduct.brand,
-        material: body.material !== undefined ? body.material : existingProduct.material,
-        sizeOptions: body.sizeOptions ? JSON.stringify(body.sizeOptions) : existingProduct.sizeOptions,
-        colorOptions: body.colorOptions ? JSON.stringify(body.colorOptions) : existingProduct.colorOptions,
-        availability: body.availability || existingProduct.availability,
-        stockQuantity: body.stockQuantity !== undefined ? parseInt(body.stockQuantity) : existingProduct.stockQuantity,
-        weight: body.weight !== undefined ? (body.weight ? parseFloat(body.weight) : null) : existingProduct.weight,
-        dimensions: body.dimensions ? JSON.stringify(body.dimensions) : existingProduct.dimensions,
-        careInstructions: body.careInstructions !== undefined ? body.careInstructions : existingProduct.careInstructions,
-        isFeatured: body.isFeatured !== undefined ? (body.isFeatured === 'true' || body.isFeatured === true) : existingProduct.isFeatured,
-        isBestseller: body.isBestseller !== undefined ? (body.isBestseller === 'true' || body.isBestseller === true) : existingProduct.isBestseller,
-        isNewArrival: body.isNewArrival !== undefined ? (body.isNewArrival === 'true' || body.isNewArrival === true) : existingProduct.isNewArrival,
-        isActive: body.isActive !== undefined ? (body.isActive !== 'false' && body.isActive !== false) : existingProduct.isActive,
-        metaTitle: body.metaTitle !== undefined ? body.metaTitle : existingProduct.metaTitle,
-        metaDescription: body.metaDescription !== undefined ? body.metaDescription : existingProduct.metaDescription,
-        metaKeywords: body.metaKeywords !== undefined ? body.metaKeywords : existingProduct.metaKeywords
-      },
+      data: updateData,
       include: {
         category: true,
+        subcategory: true,
         images: true
       }
     })
@@ -110,24 +155,57 @@ async function updateProductHandler(request, context, user) {
     // Update images if provided
     if (body.images && Array.isArray(body.images)) {
       // Delete existing images
-      await prisma.productsImage.deleteMany({
-        where: { productId: parseInt(id) }
+      await prisma.product_images.deleteMany({
+        where: { product_id: parseInt(id) }
       })
+      
+      // Ensure only one image is marked as primary
+      const hasPrimaryImage = body.images.some(img => img.isPrimary === true);
       
       // Create new images
       await Promise.all(
         body.images.map((imageData, index) =>
-          prisma.productsImage.create({
+          prisma.product_images.create({
             data: {
-              productId: parseInt(id),
-              imageUrl: imageData.url,
-              altText: imageData.alt || updatedProduct.name,
-              isPrimary: imageData.isPrimary || index === 0,
-              sortOrder: imageData.sortOrder || index + 1
+              product_id: parseInt(id),
+              image_url: imageData.url,
+              alt_text: imageData.alt || updatedProduct.name,
+              is_primary: imageData.isPrimary === true || (!hasPrimaryImage && index === 0),
+              sort_order: imageData.sortOrder || index + 1
             }
           })
         )
       )
+    }
+    
+    // Update variants if provided
+    if (body.variants !== undefined) {
+      console.log('🔄 Updating variants for product:', id);
+      
+      // Delete existing variants
+      await prisma.product_variants.deleteMany({
+        where: { product_id: parseInt(id) }
+      })
+      
+      // Create new variants
+      if (body.variants && body.variants.length > 0) {
+        console.log('💾 Creating', body.variants.length, 'new variants');
+        await Promise.all(
+          body.variants.map((variant) =>
+            prisma.product_variants.create({
+              data: {
+                product_id: parseInt(id),
+                size: variant.size || null,
+                color: variant.color || null,
+                stock_quantity: parseInt(variant.stock_quantity) || 0,
+                price_adjustment: parseFloat(variant.price_adjustment) || 0,
+                is_active: variant.is_active !== false
+              }
+            })
+          )
+        )
+        console.log('✅ Variants updated successfully');
+      }
     }
     
     // Fetch the complete updated product
@@ -135,8 +213,15 @@ async function updateProductHandler(request, context, user) {
       where: { id: parseInt(id) },
       include: {
         category: true,
+        subcategory: true,
         images: {
           orderBy: { sort_order: 'asc' }
+        },
+        variants: {
+          orderBy: [
+            { size: 'asc' },
+            { color: 'asc' }
+          ]
         }
       }
     })
@@ -166,7 +251,7 @@ async function updateProductHandler(request, context, user) {
 // DELETE /api/admin/products/[id] - Delete product (Admin only)
 async function deleteProductHandler(request, context, user) {
   try {
-    const { params } = await context
+    const params = await context.params
     const { id } = params
     
     // Check if product exists

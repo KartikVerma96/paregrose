@@ -8,7 +8,7 @@ import LoginModal from "./LoginModal";
 import RegisterModal from "./RegisterModal";
 import { useAuth } from "@/hooks/useAuth";
 import { useWishlist } from "@/hooks/useWishlist";
-import { useCart } from "@/hooks/useCart";
+import { useCartDBRedux } from "@/hooks/useCartDBRedux";
 import { useCategories } from "@/hooks/useCategories";
 
 export const Navbar = () => {
@@ -16,6 +16,7 @@ export const Navbar = () => {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [isClient, setIsClient] = useState(false);
+  const [expandedCategory, setExpandedCategory] = useState(null);
   
   // Redux auth state and actions
   const { 
@@ -28,7 +29,7 @@ export const Navbar = () => {
   const { count: wishlistCount } = useWishlist();
   
   // Cart state
-  const { count: cartCount } = useCart();
+  const { count: cartCount } = useCartDBRedux();
 
   // Categories state
   const { categories, loading: categoriesLoading } = useCategories();
@@ -38,10 +39,34 @@ export const Navbar = () => {
     setIsClient(true);
   }, []);
 
+  // Close mobile menu on Escape key
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape' && isOpen) {
+        setIsOpen(false);
+      }
+    };
+    
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [isOpen]);
+
+  // Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+      // Reset expanded category when menu closes
+      setExpandedCategory(null);
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
   // Static navigation items (non-category items)
-  const static_nav_items = [
-    { name: "About", href: "/about" },
-  ];
+  const static_nav_items = [];
 
   // Dynamic category navigation items with subcategories
   const category_nav_items = categories.map(category => ({
@@ -58,7 +83,16 @@ export const Navbar = () => {
 
   return (
     <>
-      <nav className="w-full px-2 sm:px-4 py-2 border-b border-neutral-200 bg-white">
+      {/* Backdrop Overlay for Mobile Menu */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 lg:hidden animate-fadeIn"
+          onClick={() => setIsOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      <nav className="w-full px-2 sm:px-4 py-2 border-b border-neutral-200 bg-white relative z-50">
         <div className="text-neutral-600 text-xs md:text-sm lg:text-base font-semibold mx-auto max-w-7xl">
           {/* Top Row - Logo and Icons (Desktop) */}
           <div className="lg:flex lg:justify-center lg:items-center hidden mb-4 relative">
@@ -70,6 +104,8 @@ export const Navbar = () => {
                   width={120}
                   height={72}
                   alt="logo"
+                  priority
+                  className="w-auto h-auto"
                 />
               </Link>
             </div>
@@ -223,10 +259,11 @@ export const Navbar = () => {
               <Link href="/">
                 <Image
                   src="/images/paregrose_logo.png"
-                  width={80}
-                  height={48}
+                  width={110}
+                  height={66}
                   alt="logo"
-                  className="w-[90px] h-[54px] sm:w-[100px] sm:h-[60px] md:w-[110px] md:h-[66px]"
+                  priority
+                  className="w-[90px] h-auto sm:w-[100px] md:w-[110px]"
                 />
               </Link>
             </div>
@@ -298,66 +335,92 @@ export const Navbar = () => {
                 </Link>
               </div>
 
-              {/* Menu Icon for mobile and tablet screens */}
+              {/* Animated Hamburger Menu Icon */}
               <div className="lg:hidden">
                 <button
                   onClick={() => setIsOpen(!isOpen)}
-                  className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-amber-50 transition-colors duration-200"
+                  className="flex flex-col items-center justify-center w-9 h-9 rounded-full hover:bg-amber-50 transition-all duration-200 gap-1.5 relative"
                   aria-label="Toggle menu">
-                  <CgMenuLeft
-                    size={20}
-                    className="cursor-pointer hover:text-yellow-600 transition-colors"
-                  />
+                  <span className={`w-5 h-0.5 bg-gray-700 rounded-full transition-all duration-300 ${isOpen ? 'rotate-45 absolute' : ''}`}></span>
+                  <span className={`w-5 h-0.5 bg-gray-700 rounded-full transition-all duration-300 ${isOpen ? 'opacity-0' : 'opacity-100'}`}></span>
+                  <span className={`w-5 h-0.5 bg-gray-700 rounded-full transition-all duration-300 ${isOpen ? '-rotate-45 absolute' : ''}`}></span>
                 </button>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Mobile Menu */}
-        <div
-          className={`lg:hidden overflow-hidden transition-all duration-300 ease-in-out ${
-            isOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
-          }`}>
-          <div className="border-t border-neutral-200 bg-white">
-            {/* Mobile Navigation Links */}
-            <ul className="flex flex-col items-center gap-2 py-4 px-4">
-              {categoriesLoading ? (
-                <li className="w-full text-center py-3 px-4 text-neutral-500 text-sm">
-                  Loading categories...
-                </li>
-              ) : (
-                nav_items.map((item, index) => (
-                  <li key={index} className="w-full">
-                    {/* Main category link */}
-                    <Link
-                      href={item.href}
-                      className="block w-full text-center py-3 px-4 rounded-lg text-neutral-600 hover:text-yellow-600 hover:bg-amber-50 transition-all duration-200 text-sm font-semibold"
-                      onClick={() => setIsOpen(false)}>
-                      {item.name}
-                    </Link>
-                    
-                    {/* Subcategories for mobile */}
-                    {item.subcategories && item.subcategories.length > 0 && (
-                      <div className="ml-4 mt-1 space-y-1">
-                        {item.subcategories.map((subcategory, subIndex) => (
-                          <Link
-                            key={subIndex}
-                            href={subcategory.href}
-                            className="block w-full text-center py-2 px-4 rounded-lg text-neutral-500 hover:text-yellow-600 hover:bg-amber-50 transition-all duration-200 text-xs"
-                            onClick={() => setIsOpen(false)}>
-                            • {subcategory.name}
-                          </Link>
-                        ))}
-                      </div>
-                    )}
+        {/* Mobile Menu - Only render when open */}
+        {isOpen && (
+          <div className="lg:hidden animate-slideDown relative z-50">
+            <div className="border-t border-neutral-200 bg-white shadow-xl">
+              {/* Mobile Navigation Links */}
+              <ul className="flex flex-col items-center gap-2 py-4 px-4">
+                {categoriesLoading ? (
+                  <li className="w-full text-center py-3 px-4 text-neutral-500 text-sm">
+                    Loading categories...
                   </li>
-                ))
-              )}
-            </ul>
-            
-            {/* Mobile Auth Section */}
-            <div className="border-t border-neutral-200 px-4 py-4">
+                ) : (
+                  nav_items.map((item, index) => {
+                    const hasSubcategories = item.subcategories && item.subcategories.length > 0;
+                    const isExpanded = expandedCategory === index;
+                    
+                    return (
+                      <li key={index} className="w-full">
+                        <div className="flex items-center justify-between gap-3 w-full bg-white border border-gray-100 rounded-xl p-2 hover:border-amber-200 transition-all duration-200 shadow-sm">
+                          {/* Main category link */}
+                          <Link
+                            href={item.href}
+                            className="flex-1 text-left py-2 px-3 rounded-lg text-neutral-700 hover:text-yellow-600 transition-all duration-200 text-sm font-semibold"
+                            onClick={() => setIsOpen(false)}>
+                            {item.name}
+                          </Link>
+                          
+                          {/* Toggle button for categories with subcategories */}
+                          {hasSubcategories && (
+                            <button
+                              onClick={() => setExpandedCategory(isExpanded ? null : index)}
+                              className="flex items-center justify-center w-8 h-8 rounded-lg bg-amber-50 hover:bg-amber-100 transition-all duration-200 flex-shrink-0"
+                              aria-label={`Toggle ${item.name} subcategories`}>
+                              <svg 
+                                className={`w-4 h-4 text-amber-600 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}
+                                fill="none" 
+                                stroke="currentColor" 
+                                viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+                              </svg>
+                            </button>
+                          )}
+                          
+                          {/* Spacer for items without subcategories to maintain alignment */}
+                          {!hasSubcategories && (
+                            <div className="w-8 h-8"></div>
+                          )}
+                        </div>
+                        
+                        {/* Subcategories dropdown for mobile */}
+                        {hasSubcategories && isExpanded && (
+                          <div className="mt-2 ml-3 pl-4 border-l-2 border-amber-200 space-y-1 animate-slideDown">
+                            {item.subcategories.map((subcategory, subIndex) => (
+                              <Link
+                                key={subIndex}
+                                href={subcategory.href}
+                                className="flex items-center gap-2 py-2 px-4 rounded-lg text-neutral-600 hover:text-yellow-600 hover:bg-amber-50 transition-all duration-200 text-sm bg-white border border-gray-100 hover:border-amber-200 shadow-sm"
+                                onClick={() => setIsOpen(false)}>
+                                <span className="text-amber-500 font-bold">•</span>
+                                <span>{subcategory.name}</span>
+                              </Link>
+                            ))}
+                          </div>
+                        )}
+                      </li>
+                    );
+                  })
+                )}
+              </ul>
+              
+              {/* Mobile Auth Section */}
+              <div className="border-t border-neutral-200 px-4 py-4">
               {isAuthenticated ? (
                 <div className="flex flex-col gap-3">
                   {/* User Profile Mobile */}
@@ -426,9 +489,10 @@ export const Navbar = () => {
                   <span>Login / Register</span>
                 </button>
               )}
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </nav>
 
       {/* 👇 Mount Login Modal here */}
