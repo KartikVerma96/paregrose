@@ -38,24 +38,24 @@ const ViewAllCollection = () => {
           className="text-center mb-12 sm:mb-16"
         >
           <div className="inline-block mb-3">
-            <span className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-100 to-pink-100 
-                           rounded-full text-purple-700 text-xs sm:text-sm font-bold uppercase tracking-wider border-2 border-purple-200">
+            <span className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-100 to-yellow-100 
+                           rounded-full text-amber-700 text-xs sm:text-sm font-bold uppercase tracking-wider border-2 border-amber-200">
               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
               </svg>
               Explore Categories
             </span>
           </div>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold mb-4 bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 bg-clip-text text-transparent">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold mb-4 bg-gradient-to-r from-amber-600 via-yellow-600 to-amber-600 bg-clip-text text-transparent">
             View All Collections
           </h2>
           <p className="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto">
             Browse through our curated collections and find the perfect style for every occasion
           </p>
           <div className="mt-4 flex items-center justify-center gap-2">
-            <div className="h-1 w-20 bg-gradient-to-r from-transparent via-purple-500 to-transparent rounded-full"></div>
-            <div className="h-1 w-2 bg-purple-500 rounded-full"></div>
-            <div className="h-1 w-20 bg-gradient-to-r from-transparent via-purple-500 to-transparent rounded-full"></div>
+            <div className="h-1 w-20 bg-gradient-to-r from-transparent via-amber-500 to-transparent rounded-full"></div>
+            <div className="h-1 w-2 bg-amber-500 rounded-full"></div>
+            <div className="h-1 w-20 bg-gradient-to-r from-transparent via-amber-500 to-transparent rounded-full"></div>
           </div>
         </motion.div>
 

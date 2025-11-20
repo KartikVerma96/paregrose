@@ -180,7 +180,7 @@ const ProductDetailClient = ({ product }) => {
                           selectedImageIndex === index 
                             ? 'border-amber-500 ring-2 ring-amber-200 shadow-lg' 
                             : 'border-gray-200 hover:border-amber-300'
-                        } transition-all duration-300 flex-shrink-0`}
+                        } transition-all duration-300 flex-shrink-0 cursor-pointer`}
                         onClick={() => setSelectedImageIndex(index)}
                       >
                         <Image
@@ -415,7 +415,7 @@ const ProductDetailClient = ({ product }) => {
               <button
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
                 disabled={variantStock === 0}
-                className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center hover:bg-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center hover:bg-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 -
               </button>
@@ -423,7 +423,7 @@ const ProductDetailClient = ({ product }) => {
               <button
                 onClick={() => setQuantity(Math.min(variantStock, quantity + 1))}
                 disabled={variantStock === 0 || quantity >= variantStock}
-                className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center hover:bg-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center hover:bg-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 +
               </button>
@@ -438,7 +438,7 @@ const ProductDetailClient = ({ product }) => {
           <button 
             onClick={handleAddToCart}
             disabled={loading || variantStock === 0}
-            className="w-full md:w-auto bg-amber-600 text-white py-4 px-8 rounded-lg font-semibold shadow-md hover:bg-amber-700 hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full md:w-auto bg-amber-600 text-white py-4 px-8 rounded-lg font-semibold shadow-md hover:bg-amber-700 hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
             {variantStock === 0 ? 'Out of Stock' :
              loading ? 'Adding...' : 

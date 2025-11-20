@@ -65,12 +65,12 @@ const Card = ({ name, email, city, image, title, description }) => {
                             bg-gradient-to-r from-amber-500 to-yellow-600 text-white 
                             hover:from-amber-600 hover:to-yellow-700 
                             transition-all duration-300 ease-out transform hover:scale-[1.02] active:scale-[0.98]
-                            shadow-lg hover:shadow-xl">
+                            shadow-lg hover:shadow-xl cursor-pointer">
             View Details
           </button>
           <button className="p-2.5 rounded-2xl backdrop-blur-md border border-white/30
                             bg-white/70 text-gray-700 hover:bg-amber-500 hover:text-white 
-                            transition-all duration-300 ease-out hover:scale-110 shadow-lg">
+                            transition-all duration-300 ease-out hover:scale-110 shadow-lg cursor-pointer">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
             </svg>

@@ -43,7 +43,7 @@ const ProductCard = ({ product }) => {
            {/* Wishlist Button */}
            <button
              className={`absolute top-4 right-4 p-2 rounded-full
-                         transition-all duration-300 ease-out hover:scale-110 ${
+                         transition-all duration-300 ease-out hover:scale-110 cursor-pointer ${
                isInWishlist(product.id) 
                  ? "bg-red-500 text-white shadow-lg" 
                  : "bg-white/80 text-gray-700 hover:bg-red-500 hover:text-white shadow-md"

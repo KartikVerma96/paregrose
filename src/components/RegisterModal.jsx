@@ -149,7 +149,7 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
             {/* Close Button */}
             <button
               onClick={onClose}
-              className="absolute top-3 right-3 text-neutral-600 hover:text-neutral-900 transition"
+              className="absolute top-3 right-3 text-neutral-600 hover:text-neutral-900 transition cursor-pointer"
             >
               <X size={20} />
             </button>
@@ -272,8 +272,8 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
               <button
                 type="submit"
                 disabled={loading}
-                className={`bg-yellow-600 text-white py-2.5 rounded-md font-medium text-sm shadow hover:bg-yellow-700 hover:shadow-md transition cursor-pointer ${
-                  loading ? "opacity-50 cursor-not-allowed" : ""
+                className={`bg-yellow-600 text-white py-2.5 rounded-md font-medium text-sm shadow hover:bg-yellow-700 hover:shadow-md transition ${
+                  loading ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
                 }`}
               >
                 {loading ? "Registering..." : "Register"}
@@ -291,8 +291,8 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
             <button
               type="button"
               disabled={loading}
-              className={`flex items-center justify-center gap-2 border border-neutral-300 py-2.5 w-full rounded-md hover:bg-neutral-50 transition cursor-pointer ${
-                loading ? "opacity-50 cursor-not-allowed" : ""
+              className={`flex items-center justify-center gap-2 border border-neutral-300 py-2.5 w-full rounded-md hover:bg-neutral-50 transition ${
+                loading ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
               }`}
               onClick={handleGoogleSignIn}
             >

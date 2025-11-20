@@ -71,7 +71,7 @@ const Testimonials = () => {
   };
 
   return (
-    <section className="py-16 sm:py-20 px-4 bg-gradient-to-b from-white via-rose-50/30 to-white">
+    <section className="py-16 sm:py-20 px-4 bg-gradient-to-b from-white via-amber-50/30 to-white">
       <div className="max-w-6xl mx-auto">
         {/* Enhanced Header */}
         <motion.div
@@ -82,8 +82,8 @@ const Testimonials = () => {
           className="text-center mb-12 sm:mb-16"
         >
           <div className="inline-block mb-3">
-            <span className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-rose-100 to-pink-100 
-                           rounded-full text-rose-700 text-xs sm:text-sm font-bold uppercase tracking-wider border-2 border-rose-200">
+            <span className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-100 to-yellow-100 
+                           rounded-full text-amber-700 text-xs sm:text-sm font-bold uppercase tracking-wider border-2 border-amber-200">
               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z" />
                 <path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z" />
@@ -91,16 +91,16 @@ const Testimonials = () => {
               Customer Reviews
             </span>
           </div>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold mb-4 bg-gradient-to-r from-rose-600 via-pink-600 to-rose-600 bg-clip-text text-transparent">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold mb-4 bg-gradient-to-r from-amber-600 via-yellow-600 to-amber-600 bg-clip-text text-transparent">
             What Our Customers Say
           </h2>
           <p className="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto">
             Real experiences from real customers who love our products and service
           </p>
           <div className="mt-4 flex items-center justify-center gap-2">
-            <div className="h-1 w-20 bg-gradient-to-r from-transparent via-rose-500 to-transparent rounded-full"></div>
-            <div className="h-1 w-2 bg-rose-500 rounded-full"></div>
-            <div className="h-1 w-20 bg-gradient-to-r from-transparent via-rose-500 to-transparent rounded-full"></div>
+            <div className="h-1 w-20 bg-gradient-to-r from-transparent via-amber-500 to-transparent rounded-full"></div>
+            <div className="h-1 w-2 bg-amber-500 rounded-full"></div>
+            <div className="h-1 w-20 bg-gradient-to-r from-transparent via-amber-500 to-transparent rounded-full"></div>
           </div>
         </motion.div>
 
@@ -156,7 +156,7 @@ const Testimonials = () => {
               {/* Prev Button */}
               <button
                 onClick={prevTestimonial}
-                className="absolute left-[-60px] top-1/2 -translate-y-1/2 w-12 h-12 bg-gradient-to-br from-amber-500 to-yellow-600 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-amber-600 transition-all duration-300 z-20"
+                className="absolute left-[-60px] top-1/2 -translate-y-1/2 w-12 h-12 bg-gradient-to-br from-amber-500 to-yellow-600 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-amber-600 transition-all duration-300 z-20 cursor-pointer"
               >
                 <FaChevronLeft size={20} />
               </button>
@@ -164,7 +164,7 @@ const Testimonials = () => {
               {/* Next Button */}
               <button
                 onClick={nextTestimonial}
-                className="absolute right-[-60px] top-1/2 -translate-y-1/2 w-12 h-12 bg-gradient-to-br from-amber-500 to-yellow-600 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-amber-600 transition-all duration-300 z-20"
+                className="absolute right-[-60px] top-1/2 -translate-y-1/2 w-12 h-12 bg-gradient-to-br from-amber-500 to-yellow-600 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-amber-600 transition-all duration-300 z-20 cursor-pointer"
               >
                 <FaChevronRight size={20} />
               </button>
@@ -174,7 +174,7 @@ const Testimonials = () => {
             <div className="flex items-center justify-center space-x-4 relative">
               <button
                 onClick={prevTestimonial}
-                className="w-10 h-10 bg-gradient-to-br from-amber-500 to-yellow-600 text-white rounded-full flex items-center justify-center shadow-md hover:bg-amber-600 transition-all duration-300 z-20"
+                className="w-10 h-10 bg-gradient-to-br from-amber-500 to-yellow-600 text-white rounded-full flex items-center justify-center shadow-md hover:bg-amber-600 transition-all duration-300 z-20 cursor-pointer"
               >
                 <FaChevronLeft size={18} />
               </button>

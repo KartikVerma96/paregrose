@@ -7,7 +7,33 @@ import { motion } from 'framer-motion';
 
 const ProductDetail = () => {
   const params = useParams();
-  const productId = parseInt(params.id);
+  const idParam = params.id;
+  
+  // Check if the ID is numeric (product ID) or a string (category slug)
+  const isNumeric = /^\d+$/.test(idParam);
+  const productId = isNumeric ? parseInt(idParam) : null;
+
+  // If it's not a numeric ID, it's likely a category slug - redirect to shop page
+  if (!isNumeric) {
+    return (
+      <section className="min-h-screen pt-32 pb-20 px-4 bg-gradient-to-br from-white via-gray-50 to-white">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="bg-white rounded-2xl shadow-lg p-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Category Page</h2>
+            <p className="text-gray-600 mb-8">
+              Please use the main shop page to browse categories.
+            </p>
+            <a
+              href="/shop"
+              className="inline-block bg-amber-600 text-white py-3 px-8 rounded-lg font-semibold shadow-md hover:bg-amber-700 hover:shadow-lg transition-all"
+            >
+              Go to Shop
+            </a>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   // Mock product data
   const products = [
@@ -54,7 +80,24 @@ const ProductDetail = () => {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   if (!product) {
-    return <div className="text-center text-gray-600 py-20">Product not found</div>;
+    return (
+      <section className="min-h-screen pt-32 pb-20 px-4 bg-gradient-to-br from-white via-gray-50 to-white">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="bg-white rounded-2xl shadow-lg p-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Product Not Found</h2>
+            <p className="text-gray-600 mb-8">
+              The product you're looking for doesn't exist or may have been removed.
+            </p>
+            <a
+              href="/shop"
+              className="inline-block bg-amber-600 text-white py-3 px-8 rounded-lg font-semibold shadow-md hover:bg-amber-700 hover:shadow-lg transition-all"
+            >
+              Continue Shopping
+            </a>
+          </div>
+        </div>
+      </section>
+    );
   }
 
   const renderStars = (rating) => {

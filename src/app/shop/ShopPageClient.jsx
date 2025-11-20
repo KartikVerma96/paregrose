@@ -178,7 +178,7 @@ const ProductItem = ({ product }) => {
                 <button
               className={`absolute top-3 right-3 p-2.5 rounded-full backdrop-blur-xl 
                           transition-all duration-300 z-20 
-                          shadow-lg hover:shadow-xl hover:scale-110 ${
+                          shadow-lg hover:shadow-xl hover:scale-110 cursor-pointer ${
                     isInWishlist(product.id) 
                   ? "bg-white/95 text-red-500" 
                   : "bg-white/70 text-gray-600 hover:bg-white/95 hover:text-red-500"
@@ -465,7 +465,7 @@ const ShopPageClient = () => {
                 {search && (
                   <button
                     onClick={() => setSearch('')}
-                    className="absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-100 rounded-full transition-all duration-200">
+                    className="absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-100 rounded-full transition-all duration-200 cursor-pointer">
                     <X className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500 hover:text-gray-700" strokeWidth={2.5} />
                   </button>
                 )}
@@ -476,7 +476,7 @@ const ShopPageClient = () => {
             {search && (
               <button
                 onClick={() => setSearch('')}
-                className="sm:self-end sm:w-auto w-full bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white px-5 sm:px-6 py-3 sm:py-4 rounded-xl font-bold text-sm sm:text-base transition-all duration-200 flex items-center justify-center gap-2 shadow-md hover:shadow-lg">
+                className="sm:self-end sm:w-auto w-full bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white px-5 sm:px-6 py-3 sm:py-4 rounded-xl font-bold text-sm sm:text-base transition-all duration-200 flex items-center justify-center gap-2 shadow-md hover:shadow-lg cursor-pointer">
                 <X className="w-4 h-4 sm:w-5 sm:h-5" strokeWidth={2.5} />
                 Clear
               </button>
@@ -488,7 +488,7 @@ const ShopPageClient = () => {
         <div className="lg:hidden mb-6">
           <button
             onClick={() => setIsFilterOpen(!isFilterOpen)}
-            className="w-full bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700 text-white px-6 py-4 rounded-xl font-bold text-lg transition-all duration-200 flex items-center justify-between shadow-lg hover:shadow-xl">
+            className="w-full bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700 text-white px-6 py-4 rounded-xl font-bold text-lg transition-all duration-200 flex items-center justify-between shadow-lg hover:shadow-xl cursor-pointer">
             <span className="flex items-center gap-3">
               <Filter className="w-6 h-6" strokeWidth={2.5} />
               Filters {(filter !== "All" || availabilityFilter !== "All" || sizeFilter !== "All" || colorFilter !== "All") && (
@@ -519,7 +519,7 @@ const ShopPageClient = () => {
                 </span>
                 <button
                   onClick={() => setIsFilterOpen(false)}
-                  className="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                  className="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer">
                   <X className="w-5 h-5 text-gray-600" strokeWidth={2} />
                 </button>
               </h2>

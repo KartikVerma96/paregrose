@@ -53,7 +53,7 @@ const WishlistPageClient = () => {
               <button
                 className="absolute top-4 right-4 z-10 p-3 rounded-2xl backdrop-blur-md border border-white/30
                            bg-white/70 text-red-500 hover:bg-red-500 hover:text-white hover:scale-110 
-                           transition-all duration-300 ease-out shadow-lg"
+                           transition-all duration-300 ease-out shadow-lg cursor-pointer"
                 aria-label="Remove from wishlist"
                 onClick={() => removeItem(item.id)}
               >
@@ -132,7 +132,7 @@ const WishlistPageClient = () => {
                 <div className="flex gap-3">
                   <button 
                     className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-bold 
-                                transition-all duration-300 ease-out transform hover:scale-[1.02] active:scale-[0.98] ${
+                                transition-all duration-300 ease-out transform hover:scale-[1.02] active:scale-[0.98] cursor-pointer ${
                       isInCart(item.id)
                         ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg"
                         : "bg-gradient-to-r from-amber-500 to-yellow-600 text-white hover:from-amber-600 hover:to-yellow-700 shadow-lg hover:shadow-xl"
@@ -145,7 +145,7 @@ const WishlistPageClient = () => {
                   <button 
                     className="p-3 rounded-2xl backdrop-blur-md border border-white/30
                                bg-white/70 text-red-500 hover:bg-red-500 hover:text-white 
-                               transition-all duration-300 ease-out hover:scale-110 shadow-lg"
+                               transition-all duration-300 ease-out hover:scale-110 shadow-lg cursor-pointer"
                     onClick={() => removeItem(item.id)}
                   >
                     <Heart size={16} fill="currentColor" />

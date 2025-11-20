@@ -144,7 +144,7 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
             <button
               onClick={onClose}
               aria-label="Close login modal"
-              className="absolute top-4 right-4 text-neutral-600 hover:text-neutral-900 transition">
+              className="absolute top-4 right-4 text-neutral-600 hover:text-neutral-900 transition cursor-pointer">
               <X size={22} />
             </button>
 
@@ -223,7 +223,7 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
                 type="submit"
                 disabled={loading}
                 className={`bg-yellow-600 text-white py-3 rounded-lg font-medium text-base shadow-md hover:bg-yellow-700 hover:shadow-lg transition ${
-                  loading ? "opacity-50 cursor-not-allowed" : ""
+                  loading ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
                 }`}>
                 {loading ? "Logging in..." : "Login"}
               </button>
@@ -232,7 +232,7 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
               <button
                 type="button"
                 onClick={() => showSuccess("Test Alert", "This is a test alert to verify the system is working!")}
-                className="bg-blue-500 text-white py-2 px-4 rounded-lg text-sm hover:bg-blue-600 transition">
+                className="bg-blue-500 text-white py-2 px-4 rounded-lg text-sm hover:bg-blue-600 transition cursor-pointer">
                 Test Alert
               </button>
             </form>
@@ -249,7 +249,7 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
               type="button"
               disabled={loading}
               className={`flex items-center justify-center gap-3 border border-neutral-300 py-3 w-full rounded-lg hover:bg-neutral-50 transition ${
-                loading ? "opacity-50 cursor-not-allowed" : ""
+                loading ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
               }`}
               onClick={handleGoogleSignIn}>
               <Image

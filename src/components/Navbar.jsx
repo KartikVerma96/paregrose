@@ -2,6 +2,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { CgMenuLeft } from "react-icons/cg";
 import { FaRegHeart, FaRegUser, FaShoppingCart, FaSignOutAlt } from "react-icons/fa";
 import LoginModal from "./LoginModal";
@@ -12,11 +13,27 @@ import { useCartDBRedux } from "@/hooks/useCartDBRedux";
 import { useCategories } from "@/hooks/useCategories";
 
 export const Navbar = () => {
+  const pathname = usePathname();
+  const isHomePage = pathname === '/';
   const [isOpen, setIsOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const [expandedCategory, setExpandedCategory] = useState(null);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  // Handle scroll for home page navbar background
+  useEffect(() => {
+    if (!isHomePage) return;
+
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY;
+      setIsScrolled(scrollPosition > 50);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [isHomePage]);
   
   // Redux auth state and actions
   const { 
@@ -92,7 +109,14 @@ export const Navbar = () => {
         />
       )}
 
-      <nav className="w-full px-2 sm:px-4 py-2 border-b border-neutral-200 bg-white relative z-50">
+      <nav className={`w-full px-2 sm:px-4 py-8 fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        !isHomePage || isScrolled ? 'shadow-sm' : ''
+      }`}
+      style={!isHomePage || (isHomePage && isScrolled) ? {
+        background: 'linear-gradient(to bottom, rgba(30, 30, 30, 0.95) 0%, rgba(20, 20, 20, 0.98) 50%, rgba(10, 10, 10, 1) 100%)',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)'
+      } : {}}>
         <div className="text-neutral-600 text-xs md:text-sm lg:text-base font-semibold mx-auto max-w-7xl">
           {/* Top Row - Logo and Icons (Desktop) */}
           <div className="lg:flex lg:justify-center lg:items-center hidden mb-4 relative">
@@ -101,11 +125,12 @@ export const Navbar = () => {
               <Link href="/">
                 <Image
                   src="/images/paregrose_logo.png"
-                  width={120}
-                  height={72}
+                  width={240}
+                  height={96}
                   alt="logo"
                   priority
                   className="w-auto h-auto"
+                  style={{ maxWidth: '240px', height: 'auto' }}
                 />
               </Link>
             </div>
@@ -201,13 +226,17 @@ export const Navbar = () => {
           <div className="hidden lg:block">
             <ul className="flex justify-center items-center gap-8 xl:gap-10 py-2">
               {categoriesLoading ? (
-                <li className="text-neutral-500 text-sm">Loading categories...</li>
+                <li className={`text-sm ${(isHomePage && !isScrolled) ? 'text-white drop-shadow-lg' : 'text-white'}`}>Loading categories...</li>
               ) : (
                 nav_items.map((item, index) => (
                   <li key={index} className="relative group">
                     <Link
                       href={item.href}
-                      className="cursor-pointer text-neutral-700 transition-colors duration-300 group-hover:text-yellow-600 whitespace-nowrap flex items-center gap-1">
+                      className={`cursor-pointer transition-colors duration-300 whitespace-nowrap flex items-center gap-1 ${
+                        (isHomePage && !isScrolled)
+                          ? 'text-white drop-shadow-lg group-hover:text-yellow-300' 
+                          : 'text-white group-hover:text-amber-400'
+                      }`}>
                       {item.name}
                       {/* Dropdown arrow for categories with subcategories */}
                       {item.subcategories && item.subcategories.length > 0 && (
@@ -221,7 +250,9 @@ export const Navbar = () => {
                       )}
                     </Link>
                     {/* Golden underline effect */}
-                    <span className="absolute left-0 bottom-[-4px] w-0 h-[2px] bg-yellow-600 transition-all duration-300 group-hover:w-full"></span>
+                    <span className={`absolute left-0 bottom-[-4px] w-0 h-[2px] transition-all duration-300 group-hover:w-full ${
+                      (isHomePage && !isScrolled) ? 'bg-yellow-300' : 'bg-amber-400'
+                    }`}></span>
                     
                     {/* Subcategories Dropdown */}
                     {item.subcategories && item.subcategories.length > 0 && (
@@ -259,11 +290,11 @@ export const Navbar = () => {
               <Link href="/">
                 <Image
                   src="/images/paregrose_logo.png"
-                  width={110}
-                  height={66}
+                  width={140}
+                  height={84}
                   alt="logo"
                   priority
-                  className="w-[90px] h-auto sm:w-[100px] md:w-[110px]"
+                  className="w-[110px] h-auto sm:w-[120px] md:w-[140px]"
                 />
               </Link>
             </div>
@@ -300,7 +331,7 @@ export const Navbar = () => {
                 <div className="relative group">
                   <button
                     onClick={() => setIsLoginOpen(true)}
-                    className="flex items-center gap-1 px-2 py-1 rounded-full bg-gradient-to-r from-amber-500 to-yellow-600 text-white font-semibold text-xs hover:from-amber-600 hover:to-yellow-700 transition-all duration-300 hover:shadow-md hover:scale-105 active:scale-95">
+                    className="flex items-center gap-1 px-2 py-1 rounded-full bg-gradient-to-r from-amber-500 to-yellow-600 text-white font-semibold text-xs hover:from-amber-600 hover:to-yellow-700 transition-all duration-300 hover:shadow-md hover:scale-105 active:scale-95 cursor-pointer">
                     <FaRegUser size={14} />
                     <span className="hidden sm:inline">Login</span>
                   </button>
@@ -339,7 +370,7 @@ export const Navbar = () => {
               <div className="lg:hidden">
                 <button
                   onClick={() => setIsOpen(!isOpen)}
-                  className="flex flex-col items-center justify-center w-9 h-9 rounded-full hover:bg-amber-50 transition-all duration-200 gap-1.5 relative"
+                  className="flex flex-col items-center justify-center w-9 h-9 rounded-full hover:bg-amber-50 transition-all duration-200 gap-1.5 relative cursor-pointer"
                   aria-label="Toggle menu">
                   <span className={`w-5 h-0.5 bg-gray-700 rounded-full transition-all duration-300 ${isOpen ? 'rotate-45 absolute' : ''}`}></span>
                   <span className={`w-5 h-0.5 bg-gray-700 rounded-full transition-all duration-300 ${isOpen ? 'opacity-0' : 'opacity-100'}`}></span>
@@ -380,7 +411,7 @@ export const Navbar = () => {
                           {hasSubcategories && (
                             <button
                               onClick={() => setExpandedCategory(isExpanded ? null : index)}
-                              className="flex items-center justify-center w-8 h-8 rounded-lg bg-amber-50 hover:bg-amber-100 transition-all duration-200 flex-shrink-0"
+                              className="flex items-center justify-center w-8 h-8 rounded-lg bg-amber-50 hover:bg-amber-100 transition-all duration-200 flex-shrink-0 cursor-pointer"
                               aria-label={`Toggle ${item.name} subcategories`}>
                               <svg 
                                 className={`w-4 h-4 text-amber-600 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}
@@ -473,7 +504,7 @@ export const Navbar = () => {
                       logoutUser();
                       setIsOpen(false);
                     }}
-                    className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-lg bg-red-50 border border-red-200 text-red-600 hover:bg-red-100 transition-all duration-200 text-sm font-semibold">
+                    className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-lg bg-red-50 border border-red-200 text-red-600 hover:bg-red-100 transition-all duration-200 text-sm font-semibold cursor-pointer">
                     <FaSignOutAlt size={16} />
                     <span>Logout</span>
                   </button>
@@ -484,7 +515,7 @@ export const Navbar = () => {
                     setIsLoginOpen(true);
                     setIsOpen(false);
                   }}
-                  className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-lg bg-gradient-to-r from-amber-500 to-yellow-600 text-white font-semibold text-sm hover:from-amber-600 hover:to-yellow-700 transition-all duration-200">
+                  className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-lg bg-gradient-to-r from-amber-500 to-yellow-600 text-white font-semibold text-sm hover:from-amber-600 hover:to-yellow-700 transition-all duration-200 cursor-pointer">
                   <FaRegUser size={16} />
                   <span>Login / Register</span>
                 </button>
