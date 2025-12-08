@@ -1,4 +1,3 @@
-// import Card from "@/components/Card";
 import BestSeller from "@/components/BestSeller";
 import Carousel from "@/components/Carousel";
 import SocialProof from "@/components/SocialProof";

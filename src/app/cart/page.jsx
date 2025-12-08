@@ -1,6 +1,3 @@
-import Image from "next/image";
-import { Trash2, Plus, Minus } from "lucide-react";
-import { useCart } from "@/hooks/useCart";
 import CartPageClient from "./CartPageClient";
 
 export const metadata = {

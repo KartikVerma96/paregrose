@@ -107,6 +107,12 @@ export function getAdminNavItems(userRole) {
       href: '/admin/subcategories',
       icon: 'subcategories',
       roles: [USER_ROLES.STAFF, USER_ROLES.MANAGER, USER_ROLES.ADMIN]
+    },
+    {
+      name: 'Carousel',
+      href: '/admin/carousel',
+      icon: 'carousel',
+      roles: [USER_ROLES.STAFF, USER_ROLES.MANAGER, USER_ROLES.ADMIN]
     }
   ]
 

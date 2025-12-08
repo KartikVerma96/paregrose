@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useAlert } from '@/contexts/AlertContext'
 import Image from 'next/image'
 
@@ -15,6 +15,11 @@ const ImageUpload = ({
   const [preview, setPreview] = useState(currentImage)
   const fileInputRef = useRef(null)
   const { showSuccess, showError } = useAlert()
+
+  // Update preview when currentImage changes (for editing)
+  useEffect(() => {
+    setPreview(currentImage)
+  }, [currentImage])
 
   const handleFileSelect = async (e) => {
     const file = e.target.files?.[0]

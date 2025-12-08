@@ -227,14 +227,6 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
                 }`}>
                 {loading ? "Logging in..." : "Login"}
               </button>
-
-              {/* Test Alert Button */}
-              <button
-                type="button"
-                onClick={() => showSuccess("Test Alert", "This is a test alert to verify the system is working!")}
-                className="bg-blue-500 text-white py-2 px-4 rounded-lg text-sm hover:bg-blue-600 transition cursor-pointer">
-                Test Alert
-              </button>
             </form>
 
             {/* Divider */}

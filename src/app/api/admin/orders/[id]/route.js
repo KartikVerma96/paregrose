@@ -9,36 +9,44 @@ async function handler(request, context, user) {
     const orderId = params.id
     const body = await request.json()
     
-    const updatedOrder = await prisma.whatsappOrder.update({
-      where: { id: orderId },
+    // Find order by id (int) or order_id (string)
+    const existingOrder = await prisma.whatsapp_orders.findFirst({
+      where: {
+        OR: [
+          { id: parseInt(orderId) },
+          { order_id: orderId }
+        ]
+      }
+    })
+    
+    if (!existingOrder) {
+      return NextResponse.json(
+        { success: false, error: 'Order not found' },
+        { status: 404 }
+      )
+    }
+    
+    const updatedOrder = await prisma.whatsapp_orders.update({
+      where: { id: existingOrder.id },
       data: {
         status: body.status,
-        updatedAt: new Date()
-      },
-      include: {
-        items: {
-          include: {
-            product: {
-              select: {
-                id: true,
-                name: true,
-                price: true,
-                images: {
-                  take: 1,
-                  select: {
-                    imageUrl: true
-                  }
-                }
-              }
-            }
-          }
-        }
+        updated_at: new Date()
+      }
+    })
+    
+    // Get order items separately
+    const orderItems = await prisma.whatsapp_order_items.findMany({
+      where: {
+        order_id: updatedOrder.id
       }
     })
     
     return NextResponse.json({
       success: true,
-      data: updatedOrder
+      data: {
+        ...updatedOrder,
+        items: orderItems
+      }
     })
     
   } catch (error) {

@@ -3,11 +3,11 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Heart, Trash2, ShoppingBag } from "lucide-react";
 import { useWishlist } from "@/hooks/useWishlist";
-import { useCart } from "@/hooks/useCart";
+import { useCartDBRedux } from "@/hooks/useCartDBRedux";
 
 const WishlistPageClient = () => {
   const { items: wishlistItems, removeItem, count } = useWishlist();
-  const { addItem: addToCart, isInCart } = useCart();
+  const { addItem: addToCart, isInCart } = useCartDBRedux();
   const [mounted, setMounted] = useState(false);
 
   // Fix hydration issue - only show count after client mount

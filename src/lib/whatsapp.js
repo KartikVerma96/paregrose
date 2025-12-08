@@ -193,3 +193,84 @@ export function calculateOrderStatistics(orders) {
     formattedAverageOrderValue: `₹${stats.averageOrderValue.toLocaleString('en-IN')}`
   }
 }
+
+// Format cart items into a simple WhatsApp message for direct contact
+export function formatCartForWhatsApp(cartItems, totalAmount) {
+  let message = `🛍️ *Hello Paregrose!*\n\n`
+  message += `I'm interested in purchasing the following items:\n\n`
+  message += `📦 *Cart Items:*\n\n`
+  
+  cartItems.forEach((item, index) => {
+    message += `${index + 1}. *${item.name}*\n`
+    
+    // Handle size
+    if (item.selectedSize) {
+      message += `   Size: ${item.selectedSize}\n`
+    }
+    
+    // Handle color
+    if (item.selectedColor) {
+      message += `   Color: ${item.selectedColor}\n`
+    }
+    
+    // Get price and quantity
+    const quantity = parseInt(item.quantity) || 1
+    const pricePerItem = parseFloat(item.price || 0)
+    const itemTotal = parseFloat(item.totalPrice || pricePerItem * quantity)
+    
+    message += `   Quantity: ${quantity}\n`
+    message += `   Price: ₹${pricePerItem.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}\n`
+    message += `   Total: ₹${itemTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}\n\n`
+  })
+  
+  message += `💰 *Total Amount: ₹${parseFloat(totalAmount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}*\n\n`
+  message += `Please help me with:\n`
+  message += `• Delivery address confirmation\n`
+  message += `• Payment options\n`
+  message += `• Any other details needed\n\n`
+  message += `Thank you! 🙏`
+  
+  return message
+}
+
+// Get WhatsApp business number from API
+export async function getWhatsAppNumber() {
+  try {
+    const response = await fetch('/api/whatsapp/number')
+    
+    if (!response.ok) {
+      console.error('WhatsApp API error:', response.status, response.statusText)
+      throw new Error(`Failed to fetch WhatsApp number: ${response.statusText}`)
+    }
+    
+    const result = await response.json()
+    
+    if (!result.success || !result.data.whatsappNumber) {
+      console.error('WhatsApp number not configured in database')
+      throw new Error('WhatsApp business number not configured')
+    }
+    
+    return result.data.formattedNumber || result.data.whatsappNumber.replace(/[^\d]/g, '')
+  } catch (error) {
+    console.error('Error fetching WhatsApp number:', error)
+    throw error
+  }
+}
+
+// Open WhatsApp with cart items (simplified version)
+export async function openWhatsAppWithCart(cartItems, totalAmount) {
+  try {
+    const whatsappNumber = await getWhatsAppNumber()
+    
+    if (!whatsappNumber) {
+      throw new Error('WhatsApp business number not configured')
+    }
+    
+    const message = formatCartForWhatsApp(cartItems, totalAmount)
+    const url = generateWhatsAppShareUrl(whatsappNumber, message)
+    window.open(url, '_blank')
+  } catch (error) {
+    console.error('Error opening WhatsApp:', error)
+    throw error
+  }
+}

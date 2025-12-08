@@ -8,41 +8,24 @@ export async function GET(request, { params }) {
   try {
     const { orderId } = params
     
-    const whatsappOrder = await prisma.whatsappOrder.findFirst({
+    const whatsappOrder = await prisma.whatsapp_orders.findFirst({
       where: {
         OR: [
-          { orderId: orderId },
+          { order_id: orderId },
           { id: parseInt(orderId) }
         ]
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            fullName: true,
-            email: true
-          }
-        },
-        items: {
-          include: {
-            product: {
-              select: {
-                id: true,
-                name: true,
-                slug: true,
-                price: true,
-                images: {
-                  where: { is_primary: true },
-                  select: { image_url: true },
-                  orderBy: { sort_order: 'asc' },
-                  take: 1
-                }
-              }
-            }
-          }
-        }
       }
     })
+    
+    // Get order items separately if order exists
+    let orderItems = []
+    if (whatsappOrder) {
+      orderItems = await prisma.whatsapp_order_items.findMany({
+        where: {
+          order_id: whatsappOrder.id
+        }
+      })
+    }
     
     if (!whatsappOrder) {
       return NextResponse.json(
@@ -53,7 +36,10 @@ export async function GET(request, { params }) {
     
     return NextResponse.json({
       success: true,
-      data: whatsappOrder
+      data: {
+        ...whatsappOrder,
+        items: orderItems
+      }
     })
     
   } catch (error) {
@@ -84,10 +70,10 @@ export async function PUT(request, { params }) {
     }
     
     // Find the order
-    const existingOrder = await prisma.whatsappOrder.findFirst({
+    const existingOrder = await prisma.whatsapp_orders.findFirst({
       where: {
         OR: [
-          { orderId: orderId },
+          { order_id: orderId },
           { id: parseInt(orderId) }
         ]
       }
@@ -108,9 +94,9 @@ export async function PUT(request, { params }) {
       
       // Set timestamps based on status
       if (status === 'confirmed') {
-        updateData.confirmedAt = new Date()
+        updateData.confirmed_at = new Date()
       } else if (status === 'completed') {
-        updateData.completedAt = new Date()
+        updateData.completed_at = new Date()
       }
     }
     
@@ -118,41 +104,24 @@ export async function PUT(request, { params }) {
       updateData.notes = notes
     }
     
-    const updatedOrder = await prisma.whatsappOrder.update({
+    const updatedOrder = await prisma.whatsapp_orders.update({
       where: { id: existingOrder.id },
-      data: updateData,
-      include: {
-        user: {
-          select: {
-            id: true,
-            fullName: true,
-            email: true
-          }
-        },
-        items: {
-          include: {
-            product: {
-              select: {
-                id: true,
-                name: true,
-                slug: true,
-                price: true,
-                images: {
-                  where: { is_primary: true },
-                  select: { image_url: true },
-                  orderBy: { sort_order: 'asc' },
-                  take: 1
-                }
-              }
-            }
-          }
-        }
+      data: updateData
+    })
+    
+    // Get order items
+    const orderItems = await prisma.whatsapp_order_items.findMany({
+      where: {
+        order_id: updatedOrder.id
       }
     })
     
     return NextResponse.json({
       success: true,
-      data: updatedOrder,
+      data: {
+        ...updatedOrder,
+        items: orderItems
+      },
       message: 'Order status updated successfully'
     })
     

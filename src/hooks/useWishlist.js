@@ -19,9 +19,13 @@ export const useWishlist = () => {
   // Selectors
   const items = useSelector(selectWishlistItems);
   const count = useSelector(selectWishlistCount);
+  
+  // Create selector function that uses the current state
   const isInWishlist = useCallback(
-    (productId) => useSelector(selectIsInWishlist(productId)),
-    []
+    (productId) => {
+      return items.some(item => item.id === productId);
+    },
+    [items]
   );
 
   // Actions

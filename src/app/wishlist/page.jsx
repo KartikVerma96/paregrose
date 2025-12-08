@@ -1,7 +1,3 @@
-import Image from "next/image";
-import { Heart, Trash2, ShoppingBag } from "lucide-react";
-import { useWishlist } from "@/hooks/useWishlist";
-import { useCart } from "@/hooks/useCart";
 import WishlistPageClient from "./WishlistPageClient";
 
 export const metadata = {

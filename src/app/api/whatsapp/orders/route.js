@@ -41,70 +41,39 @@ export async function GET(request) {
     }
     
     if (customerName) {
-      where.customerName = {
+      where.customer_name = {
         contains: customerName,
         mode: 'insensitive'
       }
     }
     
     if (customerPhone) {
-      where.customerPhone = {
+      where.customer_phone = {
         contains: customerPhone
       }
     }
     
     if (startDate || endDate) {
-      where.createdAt = {}
+      where.created_at = {}
       if (startDate) {
-        where.createdAt.gte = new Date(startDate)
+        where.created_at.gte = new Date(startDate)
       }
       if (endDate) {
-        where.createdAt.lte = new Date(endDate)
+        where.created_at.lte = new Date(endDate)
       }
     }
     
     // Execute query with pagination
     const [orders, totalCount] = await Promise.all([
-      prisma.whatsappOrder.findMany({
+      prisma.whatsapp_orders.findMany({
         where,
-        include: {
-          user: {
-            select: {
-              id: true,
-              fullName: true,
-              email: true
-            }
-          },
-          items: {
-            include: {
-              product: {
-                select: {
-                  id: true,
-                  name: true,
-                  slug: true,
-                images: {
-                  where: { is_primary: true },
-                  select: { image_url: true },
-                  orderBy: { sort_order: 'asc' },
-                  take: 1
-                }
-                }
-              }
-            }
-          },
-          _count: {
-            select: {
-              items: true
-            }
-          }
-        },
         orderBy: {
-          createdAt: 'desc'
+          created_at: 'desc'
         },
         skip: offset,
         take: limit
       }),
-      prisma.whatsappOrder.count({ where })
+      prisma.whatsapp_orders.count({ where })
     ])
     
     // Calculate pagination info
@@ -113,10 +82,10 @@ export async function GET(request) {
     const hasPrevPage = page > 1
     
     // Calculate summary statistics
-    const summary = await prisma.whatsappOrder.aggregate({
+    const summary = await prisma.whatsapp_orders.aggregate({
       where: where,
       _sum: {
-        totalAmount: true
+        total_amount: true
       },
       _count: {
         id: true
@@ -137,8 +106,8 @@ export async function GET(request) {
         },
         summary: {
           totalOrders: summary._count.id,
-          totalValue: summary._sum.totalAmount || 0,
-          formattedTotalValue: `₹${(summary._sum.totalAmount || 0).toLocaleString('en-IN')}`
+          totalValue: summary._sum.total_amount || 0,
+          formattedTotalValue: `₹${(summary._sum.total_amount || 0).toLocaleString('en-IN')}`
         }
       }
     })

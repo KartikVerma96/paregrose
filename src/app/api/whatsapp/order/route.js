@@ -33,9 +33,9 @@ export async function POST(request) {
     }
     
     // Get business settings
-    const businessSettings = await prisma.businessSetting.findMany({
+    const businessSettings = await prisma.business_settings.findMany({
       where: {
-        settingKey: {
+        setting_key: {
           in: ['whatsapp_business_number', 'business_name', 'business_address']
         }
       }
@@ -43,7 +43,7 @@ export async function POST(request) {
     
     const settings = {}
     businessSettings.forEach(setting => {
-      settings[setting.settingKey] = setting.settingValue
+      settings[setting.setting_key] = setting.setting_value
     })
     
     if (!settings.whatsapp_business_number) {
@@ -75,15 +75,15 @@ export async function POST(request) {
     })
     
     // Create WhatsApp order in database
-    const whatsappOrder = await prisma.whatsappOrder.create({
+    const whatsappOrder = await prisma.whatsapp_orders.create({
       data: {
-        orderId,
-        userId: session?.user?.id || null,
-        customerName,
-        customerPhone,
-        customerEmail: customerEmail || null,
-        whatsappMessage,
-        totalAmount,
+        order_id: orderId,
+        user_id: session?.user?.id || null,
+        customer_name: customerName,
+        customer_phone: customerPhone,
+        customer_email: customerEmail || null,
+        whatsapp_message: whatsappMessage,
+        total_amount: totalAmount,
         status: 'sent',
         notes: notes || null
       }
@@ -92,17 +92,17 @@ export async function POST(request) {
     // Create order items
     const orderItems = await Promise.all(
       cartItems.map(async (item) => {
-        return prisma.whatsappOrderItem.create({
+        return prisma.whatsapp_order_items.create({
           data: {
-            orderId: whatsappOrder.id,
-            productId: item.productId || null,
-            productName: item.name,
-            productSku: item.sku || null,
+            order_id: whatsappOrder.id,
+            product_id: item.productId || null,
+            product_name: item.name,
+            product_sku: item.sku || null,
             quantity: parseInt(item.quantity),
-            unitPrice: parseFloat(item.price),
-            totalPrice: parseFloat(item.price) * parseInt(item.quantity),
-            selectedSize: item.selectedSize || null,
-            selectedColor: item.selectedColor || null
+            unit_price: parseFloat(item.price),
+            total_price: parseFloat(item.price) * parseInt(item.quantity),
+            selected_size: item.selectedSize || null,
+            selected_color: item.selectedColor || null
           }
         })
       })

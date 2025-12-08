@@ -11,9 +11,6 @@ const ProductItem = ({ product }) => {
   const { toggleWishlist, isInWishlist } = useWishlist();
   const { addItem: addToCart, isInCart, loading } = useCartDBRedux();
   
-  const [selectedSize, setSelectedSize] = useState("");
-  const [selectedColor, setSelectedColor] = useState("");
-  const [showOptions, setShowOptions] = useState(false);
 
   const imageUrl = product.images?.[0]?.image_url || product.images?.[0]?.imageUrl;
   const productPrice = parseFloat(product.price);
@@ -21,71 +18,15 @@ const ProductItem = ({ product }) => {
   const hasDiscount = originalPrice > productPrice;
   const discountPercent = hasDiscount ? Math.round(((originalPrice - productPrice) / originalPrice) * 100) : 0;
   
-  // Parse size and color options with error handling
-  const parseSizeOptions = () => {
-    if (!product.size_options) return [];
-    try {
-      const parsed = typeof product.size_options === 'string' 
-        ? JSON.parse(product.size_options) 
-        : product.size_options;
-      console.log(`📏 Size options for "${product.name}":`, parsed);
-      return Array.isArray(parsed) ? parsed : [];
-    } catch (error) {
-      console.error(`❌ Failed to parse size_options for "${product.name}":`, product.size_options, error);
-      return [];
-    }
-  };
-  
-  const parseColorOptions = () => {
-    if (!product.color_options) return [];
-    try {
-      const parsed = typeof product.color_options === 'string' 
-        ? JSON.parse(product.color_options) 
-        : product.color_options;
-      console.log(`🎨 Color options for "${product.name}":`, parsed);
-      return Array.isArray(parsed) ? parsed : [];
-    } catch (error) {
-      console.error(`❌ Failed to parse color_options for "${product.name}":`, product.color_options, error);
-      return [];
-    }
-  };
-  
-  const sizeOptions = parseSizeOptions();
-  const colorOptions = parseColorOptions();
-  
-  // Debug: Show product data
-  console.log(`🔍 Product "${product.name}" data:`, {
-    size_options: product.size_options,
-    color_options: product.color_options,
-    parsedSizes: sizeOptions,
-    parsedColors: colorOptions
-  });
-  
-  // Set default selections
-  useEffect(() => {
-    if (sizeOptions.length > 0 && !selectedSize) {
-      console.log(`✅ Auto-selecting first size for "${product.name}":`, sizeOptions[0]);
-      setSelectedSize(sizeOptions[0]);
-    }
-    if (colorOptions.length > 0 && !selectedColor) {
-      console.log(`✅ Auto-selecting first color for "${product.name}":`, colorOptions[0]);
-      setSelectedColor(colorOptions[0]);
-    }
-  }, [sizeOptions, colorOptions, selectedSize, selectedColor, product.name]);
   
   const handleAddToCart = (e) => {
     e.preventDefault();
     e.stopPropagation();
     
-    console.log(`🛒 Adding to cart - Product: "${product.name}", Size: ${selectedSize}, Color: ${selectedColor}`);
+    console.log(`🛒 Adding to cart - Product: "${product.name}"`);
     
-    // Pass product, quantity, selectedSize, selectedColor as separate parameters
-    addToCart(
-      product, 
-      1, 
-      sizeOptions.length > 0 ? selectedSize : null,
-      colorOptions.length > 0 ? selectedColor : null
-    );
+    // Add to cart without size/color selection - user can select on product detail page
+    addToCart(product, 1, null, null);
   };
   
   // Get availability info
@@ -241,69 +182,6 @@ const ProductItem = ({ product }) => {
               </div>
                 </div>
                 
-            {/* Size and Color Options */}
-            {(sizeOptions.length > 0 || colorOptions.length > 0) && (
-              <div className="pt-2 space-y-2 border-t border-gray-100">
-                {/* Size Options */}
-                {sizeOptions.length > 0 && (
-                  <div>
-                    <p className="text-[10px] text-gray-600 font-medium mb-1.5">Size:</p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {sizeOptions.slice(0, 4).map((size) => (
-                <button
-                          key={size}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            setSelectedSize(size);
-                          }}
-                          className={`px-2.5 py-1 text-[10px] font-semibold rounded border transition-all cursor-pointer ${
-                            selectedSize === size
-                              ? 'bg-amber-500 text-white border-amber-500'
-                              : 'bg-white text-gray-700 border-gray-300 hover:border-amber-400'
-                          }`}
-                        >
-                          {size}
-                        </button>
-                      ))}
-                      {sizeOptions.length > 4 && (
-                        <span className="px-2.5 py-1 text-[10px] text-gray-500">+{sizeOptions.length - 4}</span>
-                      )}
-                    </div>
-                  </div>
-                )}
-                
-                {/* Color Options */}
-                {colorOptions.length > 0 && (
-                  <div>
-                    <p className="text-[10px] text-gray-600 font-medium mb-1.5">Color:</p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {colorOptions.slice(0, 5).map((color) => (
-                        <button
-                          key={color}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                            setSelectedColor(color);
-                          }}
-                          className={`px-2.5 py-1 text-[10px] font-semibold rounded border transition-all cursor-pointer ${
-                            selectedColor === color
-                              ? 'bg-amber-500 text-white border-amber-500'
-                              : 'bg-white text-gray-700 border-gray-300 hover:border-amber-400'
-                          }`}
-                        >
-                          {color}
-                        </button>
-                      ))}
-                      {colorOptions.length > 5 && (
-                        <span className="px-2.5 py-1 text-[10px] text-gray-500">+{colorOptions.length - 5}</span>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-                
             {/* Add to Cart Button */}
             <button
               className={`w-full mt-3 py-2.5 px-4 rounded-lg font-semibold text-sm
@@ -328,7 +206,7 @@ const ProductItem = ({ product }) => {
   );
 };
 
-const ShopPageClient = () => {
+const ShopPageClient = ({ categorySlug = null }) => {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("All");
   const [availabilityFilter, setAvailabilityFilter] = useState("All");
@@ -360,6 +238,16 @@ const ShopPageClient = () => {
     fetchProducts();
     fetchCategories();
   }, []);
+
+  // Set filter based on category slug when categories are loaded
+  useEffect(() => {
+    if (categorySlug && categories.length > 0) {
+      const category = categories.find(cat => cat.slug === categorySlug);
+      if (category) {
+        setFilter(category.name);
+      }
+    }
+  }, [categorySlug, categories]);
 
   const fetchProducts = async () => {
     try {
@@ -398,7 +286,15 @@ const ShopPageClient = () => {
   };
 
   const filteredProducts = products.filter((p) => {
-    const matchesCategory = filter === "All" || p.category?.name === filter || p.category?.slug === filter;
+    // Check category match: prioritize categorySlug prop, then filter dropdown
+    let matchesCategory = true;
+    if (categorySlug) {
+      // If categorySlug is provided, match by slug
+      matchesCategory = p.category?.slug === categorySlug;
+    } else if (filter !== "All") {
+      // Otherwise, use the filter dropdown value
+      matchesCategory = p.category?.name === filter || p.category?.slug === filter;
+    }
     const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase());
     
     const matchesAvailability = availabilityFilter === "All" || p.availability === availabilityFilter || 
@@ -689,7 +585,7 @@ const ShopPageClient = () => {
                <p className="text-gray-600 text-lg mb-6">
                  {search || filter !== "All" || availabilityFilter !== "All" || sizeFilter !== "All" || colorFilter !== "All"
                    ? "Try adjusting your search or filter criteria" 
-                   : "Products will appear here once they are added by the admin"}
+                   : "Products will appear here once they are added by the Paregrose"}
                </p>
                {(search || filter !== "All" || availabilityFilter !== "All" || sizeFilter !== "All" || colorFilter !== "All") && (
                  <button

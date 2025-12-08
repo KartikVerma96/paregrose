@@ -154,7 +154,7 @@ const ViewAllCollection = () => {
               </svg>
             </div>
             <h3 className="text-lg font-medium text-gray-900 mb-2">No categories available</h3>
-            <p className="text-gray-500">Categories will appear here once they are added by the admin.</p>
+            <p className="text-gray-500">Categories will appear here once they are added by the Paregrose.</p>
           </div>
         )}
       </div>

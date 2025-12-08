@@ -1,9 +1,11 @@
 "use client";
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { Trash2, Plus, Minus, ShoppingBag, Tag, Truck, Shield, ArrowRight, Percent, Gift, Clock } from "lucide-react";
+import { Trash2, Plus, Minus, ShoppingBag, Tag, Truck, Shield, Percent, Gift, ArrowRight } from "lucide-react";
 import { useCartDBRedux } from "@/hooks/useCartDBRedux";
 import Link from "next/link";
+import { openWhatsAppWithCart } from "@/lib/whatsapp";
+import { useAlert } from "@/contexts/AlertContext";
 
 const CartPageClient = () => {
   const { 
@@ -16,6 +18,8 @@ const CartPageClient = () => {
     count 
   } = useCartDBRedux();
   
+  const { showError } = useAlert();
+  
   // Calculate subtotal (total without discount)
   const subtotal = cartItems.reduce((sum, item) => {
     return sum + (item.totalPrice || 0);
@@ -24,21 +28,42 @@ const CartPageClient = () => {
   const savings = 0; // For now, we don't have original price in DB cart
   
   const [mounted, setMounted] = useState(false);
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
   
   useEffect(() => {
     setMounted(true);
   }, []);
   
+  // Track initial load completion - only show loader on first load
+  useEffect(() => {
+    if (mounted && !loading && !initialLoadComplete) {
+      setInitialLoadComplete(true);
+    }
+  }, [mounted, loading, initialLoadComplete]);
+  
   // Helper functions for quantity management
-  const incrementQuantity = async (item) => {
+  const incrementQuantity = async (e, item) => {
+    e.preventDefault();
+    e.stopPropagation();
     await updateItemQuantity(item.id, item.quantity + 1);
   };
   
-  const decrementQuantity = async (item) => {
+  const decrementQuantity = async (e, item) => {
+    e.preventDefault();
+    e.stopPropagation();
     if (item.quantity > 1) {
       await updateItemQuantity(item.id, item.quantity - 1);
     } else {
       await removeItem(item.id);
+    }
+  };
+
+  // Handle WhatsApp button click
+  const handleWhatsAppClick = async () => {
+    try {
+      await openWhatsAppWithCart(cartItems, total);
+    } catch (error) {
+      showError("WhatsApp Error", error.message || "Failed to open WhatsApp. Please check if WhatsApp number is configured.");
     }
   };
 
@@ -84,7 +109,7 @@ const CartPageClient = () => {
               )}
             </div>
 
-      {!mounted || loading ? (
+      {!mounted || (!initialLoadComplete && loading) ? (
         <div className="flex justify-center items-center py-20">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600"></div>
         </div>
@@ -99,7 +124,6 @@ const CartPageClient = () => {
                 <button
                   onClick={clearAll}
                   className="text-sm text-red-500 hover:text-red-600 font-medium flex items-center gap-1 transition-colors cursor-pointer"
-                  disabled={loading}
                 >
                   <Trash2 size={14} strokeWidth={2} />
                   Clear All
@@ -175,7 +199,6 @@ const CartPageClient = () => {
                           onClick={() => removeItem(item.id)}
                           className="flex-shrink-0 h-fit p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all cursor-pointer"
                           aria-label="Remove item"
-                          disabled={loading}
                         >
                           <Trash2 size={20} strokeWidth={2} />
                         </button>
@@ -193,23 +216,23 @@ const CartPageClient = () => {
                         {/* Quantity Controls */}
                         <div className="flex items-center gap-4">
                           <div className="flex items-center border-2 border-gray-200 rounded-xl bg-white shadow-sm">
-                            <button
-                              onClick={() => decrementQuantity(item)}
-                              className="p-2.5 hover:bg-amber-50 hover:text-amber-600 transition-all disabled:opacity-50 rounded-l-xl cursor-pointer"
-                              disabled={loading}
-                            >
-                              <Minus size={18} strokeWidth={2.5} />
-                            </button>
-                            <span className="px-5 py-2 font-bold text-base min-w-[3.5rem] text-center border-x-2 border-gray-200 bg-gray-50">
-                              {item.quantity}
-                            </span>
-                            <button
-                              onClick={() => incrementQuantity(item)}
-                              className="p-2.5 hover:bg-amber-50 hover:text-amber-600 transition-all disabled:opacity-50 rounded-r-xl cursor-pointer"
-                              disabled={loading}
-                            >
-                              <Plus size={18} strokeWidth={2.5} />
-                            </button>
+                        <button
+                          type="button"
+                          onClick={(e) => decrementQuantity(e, item)}
+                          className="p-2.5 hover:bg-amber-50 hover:text-amber-600 transition-all rounded-l-xl cursor-pointer"
+                        >
+                          <Minus size={18} strokeWidth={2.5} />
+                        </button>
+                        <span className="px-5 py-2 font-bold text-base min-w-[3.5rem] text-center border-x-2 border-gray-200 bg-gray-50">
+                          {item.quantity}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={(e) => incrementQuantity(e, item)}
+                          className="p-2.5 hover:bg-amber-50 hover:text-amber-600 transition-all rounded-r-xl cursor-pointer"
+                        >
+                          <Plus size={18} strokeWidth={2.5} />
+                        </button>
                           </div>
                           <div className="text-right hidden sm:block">
                             <p className="text-xs text-gray-500 font-medium mb-0.5">Item Total</p>
@@ -285,8 +308,7 @@ const CartPageClient = () => {
                   Apply
                 </button>
               </div>
-              <p className="text-xs text-gray-600 mt-2 flex items-center gap-1">
-                <Clock size={12} />
+              <p className="text-xs text-gray-600 mt-2">
                 Limited time offers available!
               </p>
             </div>
@@ -337,14 +359,20 @@ const CartPageClient = () => {
                   </div>
                 </div>
 
-                <button className="w-full bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-600 hover:via-orange-600 hover:to-amber-700
-                                   text-white py-4 rounded-xl font-bold text-lg
-                                   transition-all duration-300 
-                                   shadow-xl shadow-amber-500/40 hover:shadow-2xl hover:shadow-amber-500/50
-                                   flex items-center justify-center gap-2 group
-                                   hover:scale-[1.02] active:scale-[0.98] cursor-pointer">
-                  <span>Proceed to Checkout</span>
-                  <ArrowRight size={22} strokeWidth={2.5} className="group-hover:translate-x-1 transition-transform" />
+                {/* WhatsApp Button - Enhanced */}
+                <button 
+                  onClick={handleWhatsAppClick}
+                  className="relative w-full bg-gradient-to-r from-[#25D366] via-[#20BA5A] to-[#128C7E] hover:from-[#20BA5A] hover:via-[#128C7E] hover:to-[#075E54] text-white py-5 rounded-2xl font-bold text-lg transition-all duration-300 shadow-2xl shadow-[#25D366]/50 hover:shadow-[#25D366]/70 flex items-center justify-center gap-3 group hover:scale-[1.02] active:scale-[0.98] cursor-pointer mt-4 border-2 border-white/20 hover:border-white/30 overflow-hidden">
+                  
+                  {/* WhatsApp Icon */}
+                  <div className="relative z-10 flex items-center justify-center">
+                    <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+                    </svg>
+                  </div>
+                  
+                  {/* Button Text */}
+                  <span className="relative z-10">Order via WhatsApp</span>
                 </button>
 
                 {/* Trust Indicators */}
