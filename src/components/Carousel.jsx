@@ -38,19 +38,25 @@ if (typeof document !== 'undefined') {
         background: linear-gradient(
           135deg,
           #ffffff 0%,
-          #fef3c7 15%,
-          #fde68a 30%,
-          #fbbf24 45%,
-          #f59e0b 60%,
-          #fbbf24 75%,
-          #fde68a 90%,
-          #ffffff 100%
+          #fef3c7 8%,
+          #fde68a 16%,
+          #fbbf24 24%,
+          #f59e0b 32%,
+          #ea580c 40%,
+          #f97316 48%,
+          #fb923c 56%,
+          #fbbf24 64%,
+          #fcd34d 72%,
+          #fde68a 80%,
+          #fef3c7 88%,
+          #ffffff 96%,
+          #fef3c7 100%
         );
-        background-size: 200% 200%;
+        background-size: 300% 300%;
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
-        animation: gradient-shift 4s ease infinite;
+        animation: gradient-shift 5s ease infinite;
       }
     `;
     document.head.appendChild(style);
