@@ -17,10 +17,10 @@ export async function DELETE(request, { params }) {
     }
     
     // Find the wishlist item and verify ownership
-    const wishlistItem = await prisma.wishlistItem.findFirst({
+    const wishlistItem = await prisma.wishlist_items.findFirst({
       where: {
         id: parseInt(id),
-        userId: session.user.id
+        user_id: session.user.id
       },
       include: {
         product: {
@@ -39,7 +39,7 @@ export async function DELETE(request, { params }) {
     }
     
     // Delete the wishlist item
-    await prisma.wishlistItem.delete({
+    await prisma.wishlist_items.delete({
       where: { id: parseInt(id) }
     })
     

@@ -20,10 +20,10 @@ export async function GET(request, { params }) {
     }
     
     // Check if product exists in user's wishlist
-    const wishlistItem = await prisma.wishlistItem.findFirst({
+    const wishlistItem = await prisma.wishlist_items.findFirst({
       where: {
-        userId: session.user.id,
-        productId: parseInt(productId)
+        user_id: session.user.id,
+        product_id: parseInt(productId)
       },
       select: {
         id: true

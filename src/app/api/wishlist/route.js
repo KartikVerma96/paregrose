@@ -15,16 +15,16 @@ export async function GET(request) {
       )
     }
     
-    const wishlistItems = await prisma.wishlistItem.findMany({
+    const wishlistItems = await prisma.wishlist_items.findMany({
       where: {
-        userId: session.user.id
+        user_id: session.user.id
       },
       include: {
         product: {
           include: {
             category: true,
             images: {
-              orderBy: { sortOrder: 'asc' }
+              orderBy: { sort_order: 'asc' }
             },
             _count: {
               select: {
@@ -35,7 +35,7 @@ export async function GET(request) {
         }
       },
       orderBy: {
-        createdAt: 'desc'
+        created_at: 'desc'
       }
     })
     
@@ -80,16 +80,16 @@ export async function POST(request) {
     }
     
     // Check if product exists and is active
-    const product = await prisma.product.findUnique({
+    const product = await prisma.products.findUnique({
       where: { id: parseInt(productId) },
       select: {
         id: true,
         name: true,
-        isActive: true
+        is_active: true
       }
     })
     
-    if (!product || !product.isActive) {
+    if (!product || !product.is_active) {
       return NextResponse.json(
         { success: false, error: 'Product not found or not available' },
         { status: 404 }
@@ -97,10 +97,10 @@ export async function POST(request) {
     }
     
     // Check if item already exists in wishlist
-    const existingWishlistItem = await prisma.wishlistItem.findFirst({
+    const existingWishlistItem = await prisma.wishlist_items.findFirst({
       where: {
-        userId: session.user.id,
-        productId: parseInt(productId)
+        user_id: session.user.id,
+        product_id: parseInt(productId)
       }
     })
     
@@ -112,17 +112,17 @@ export async function POST(request) {
     }
     
     // Add item to wishlist
-    const wishlistItem = await prisma.wishlistItem.create({
+    const wishlistItem = await prisma.wishlist_items.create({
       data: {
-        userId: session.user.id,
-        productId: parseInt(productId)
+        user_id: session.user.id,
+        product_id: parseInt(productId)
       },
       include: {
         product: {
           include: {
             category: true,
             images: {
-              orderBy: { sortOrder: 'asc' }
+              orderBy: { sort_order: 'asc' }
             },
             _count: {
               select: {
@@ -162,9 +162,9 @@ export async function DELETE(request) {
     }
     
     // Delete all wishlist items for the user
-    const deletedItems = await prisma.wishlistItem.deleteMany({
+    const deletedItems = await prisma.wishlist_items.deleteMany({
       where: {
-        userId: session.user.id
+        user_id: session.user.id
       }
     })
     

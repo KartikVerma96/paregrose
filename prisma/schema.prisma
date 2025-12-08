@@ -162,6 +162,7 @@ model products {
   reviews       reviews[]
   cart_items    cart_items[]
   variants      product_variants[]
+  wishlist_items wishlist_items[]
 
   @@index([is_active], map: "idx_products_active")
   @@index([availability], map: "idx_products_availability")
@@ -224,6 +225,9 @@ model user {
   role       String?   @default("customer") @db.VarChar(20)
   is_active  Boolean?  @default(true)
   last_login DateTime? @db.DateTime(0)
+  
+  // Relationships
+  wishlist_items wishlist_items[]
 }
 
 model whatsapp_order_items {
@@ -270,6 +274,10 @@ model wishlist_items {
   user_id    Int
   product_id Int
   created_at DateTime @default(now()) @db.Timestamp(0)
+
+  // Relationships
+  user       user     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  product    products @relation(fields: [product_id], references: [id], onDelete: Cascade)
 
   @@index([product_id], map: "idx_wishlist_items_product")
   @@index([user_id], map: "idx_wishlist_items_user")

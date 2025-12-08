@@ -168,7 +168,7 @@ export async function POST(request) {
     const slug = body.slug || body.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')
     
     // Create product
-    const product = await prisma.product.create({
+    const product = await prisma.products.create({
       data: {
         name: body.name,
         slug,

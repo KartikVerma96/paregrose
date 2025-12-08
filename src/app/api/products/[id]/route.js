@@ -13,21 +13,21 @@ export async function GET(request, { params }) {
       ? { id: parseInt(id) }
       : { slug: id }
     
-    const product = await prisma.product.findFirst({
+    const product = await prisma.products.findFirst({
       where: whereClause,
       include: {
         category: true,
         images: {
-          orderBy: { sortOrder: 'asc' }
+          orderBy: { sort_order: 'asc' }
         },
         reviews: {
-          where: { isApproved: true },
+          where: { is_approved: true },
           include: {
             user: {
               select: { fullName: true }
             }
           },
-          orderBy: { createdAt: 'desc' }
+          orderBy: { created_at: 'desc' }
         },
         _count: {
           select: {
@@ -91,7 +91,7 @@ export async function PUT(request, { params }) {
       : existingProduct.slug
     
     // Update product
-    const updatedProduct = await prisma.product.update({
+    const updatedProduct = await prisma.products.update({
       where: { id: parseInt(id) },
       data: {
         name: body.name || existingProduct.name,
@@ -154,7 +154,7 @@ export async function DELETE(request, { params }) {
     const { id } = params
     
     // Check if product exists
-    const existingProduct = await prisma.product.findUnique({
+    const existingProduct = await prisma.products.findUnique({
       where: { id: parseInt(id) }
     })
     
@@ -166,7 +166,7 @@ export async function DELETE(request, { params }) {
     }
     
     // Delete product (this will cascade delete related records due to foreign keys)
-    await prisma.product.delete({
+    await prisma.products.delete({
       where: { id: parseInt(id) }
     })
     

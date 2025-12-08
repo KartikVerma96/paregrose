@@ -1,7 +1,7 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
-import { Heart, ShoppingCart, Search, Tag, X, RotateCcw, Filter } from "lucide-react";
+import { Heart, ShoppingCart, Search, Tag, X, RotateCcw, Filter, ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { useWishlist } from "@/hooks/useWishlist";
 import { useCartDBRedux } from "@/hooks/useCartDBRedux";
@@ -202,6 +202,84 @@ const ProductItem = ({ product }) => {
               </div>
             </div>
           </Link>
+    </div>
+  );
+};
+
+// Custom Dropdown Component
+const CustomDropdown = ({ label, icon, value, onChange, options, placeholder = "Select..." }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen]);
+
+  const selectedOption = options.find(opt => opt.value === value) || { label: placeholder, value: null };
+
+  return (
+    <div>
+      <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3">
+        {icon}
+        {label}
+      </label>
+      <div className="relative" ref={dropdownRef}>
+        <button
+          type="button"
+          onClick={() => setIsOpen(!isOpen)}
+          className="filter-select w-full px-4 py-3 pr-10 border-2 border-amber-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-200 bg-gradient-to-br from-white to-amber-50/30 hover:from-amber-50/50 hover:to-amber-100/30 cursor-pointer font-medium text-gray-800 shadow-sm hover:shadow-md flex items-center justify-between"
+        >
+          <span className={value ? "text-gray-800" : "text-gray-500"}>
+            {selectedOption.label}
+          </span>
+          <ChevronDown 
+            className={`w-5 h-5 text-amber-600 transition-transform duration-200 ${isOpen ? 'transform rotate-180' : ''}`} 
+          />
+        </button>
+
+        {isOpen && (
+          <div className="absolute z-50 w-full mt-2 bg-white rounded-xl shadow-2xl border-2 border-amber-200 overflow-hidden animate-slideDown">
+            <div className="max-h-60 overflow-y-auto custom-scrollbar">
+              {options.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => {
+                    onChange(option.value);
+                    setIsOpen(false);
+                  }}
+                  className={`w-full text-left px-4 py-3 transition-all duration-200 font-medium ${
+                    value === option.value
+                      ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-white'
+                      : 'text-gray-800 hover:bg-gradient-to-r hover:from-amber-50 hover:to-yellow-50 hover:text-amber-900'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span>{option.label}</span>
+                    {value === option.value && (
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    )}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
@@ -422,87 +500,69 @@ const ShopPageClient = ({ categorySlug = null }) => {
                
                <div className="space-y-6">
                  {/* Category Filter */}
-                 <div>
-                   <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3">
-                     <Tag className="w-4 h-4 text-amber-600" strokeWidth={2.5} />
-                     Category
-                   </label>
-                   <select
-                     value={filter}
-                     onChange={(e) => setFilter(e.target.value)}
-                     className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-200 bg-gray-50 hover:bg-white cursor-pointer">
-                     <option value="All">All Categories</option>
-                     {categories.map((category) => (
-                       <option key={category.id} value={category.name}>
-                         {category.name}
-                       </option>
-                     ))}
-                   </select>
-                 </div>
+                 <CustomDropdown
+                   label="Category"
+                   icon={<Tag className="w-4 h-4 text-amber-600" strokeWidth={2.5} />}
+                   value={filter}
+                   onChange={setFilter}
+                   options={[
+                     { value: "All", label: "All Categories" },
+                     ...categories.map(cat => ({ value: cat.name, label: cat.name }))
+                   ]}
+                 />
                  
                  {/* Availability Filter */}
-                 <div>
-                   <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3">
+                 <CustomDropdown
+                   label="Availability"
+                   icon={
                      <svg className="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                      </svg>
-                     Availability
-                   </label>
-                   <select
-                     value={availabilityFilter}
-                     onChange={(e) => setAvailabilityFilter(e.target.value)}
-                     className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-200 bg-gray-50 hover:bg-white cursor-pointer">
-                     <option value="All">All Stock Status</option>
-                     <option value="In_Stock">In Stock</option>
-                     <option value="Limited_Stock">Limited Stock</option>
-                     <option value="Out_of_Stock">Out of Stock</option>
-                   </select>
-                 </div>
+                   }
+                   value={availabilityFilter}
+                   onChange={setAvailabilityFilter}
+                   options={[
+                     { value: "All", label: "All Stock Status" },
+                     { value: "In_Stock", label: "In Stock" },
+                     { value: "Limited_Stock", label: "Limited Stock" },
+                     { value: "Out_of_Stock", label: "Out of Stock" }
+                   ]}
+                 />
                  
                  {/* Size Filter */}
                  {allSizes.length > 0 && (
-                   <div>
-                     <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3">
+                   <CustomDropdown
+                     label="Size"
+                     icon={
                        <svg className="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
                          <path strokeLinecap="round" strokeLinejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                        </svg>
-                       Size
-                     </label>
-                     <select
-                       value={sizeFilter}
-                       onChange={(e) => setSizeFilter(e.target.value)}
-                       className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-200 bg-gray-50 hover:bg-white cursor-pointer">
-                       <option value="All">All Sizes</option>
-                       {allSizes.map((size) => (
-                         <option key={size} value={size}>
-                           {size}
-                         </option>
-                       ))}
-                     </select>
-                   </div>
+                     }
+                     value={sizeFilter}
+                     onChange={setSizeFilter}
+                     options={[
+                       { value: "All", label: "All Sizes" },
+                       ...allSizes.map(size => ({ value: size, label: size }))
+                     ]}
+                   />
                  )}
                  
                  {/* Color Filter */}
                  {allColors.length > 0 && (
-                   <div>
-                     <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3">
+                   <CustomDropdown
+                     label="Color"
+                     icon={
                        <svg className="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
                          <path strokeLinecap="round" strokeLinejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
                        </svg>
-                       Color
-                     </label>
-                     <select
-                       value={colorFilter}
-                       onChange={(e) => setColorFilter(e.target.value)}
-                       className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-200 bg-gray-50 hover:bg-white cursor-pointer">
-                       <option value="All">All Colors</option>
-                       {allColors.map((color) => (
-                         <option key={color} value={color}>
-                           {color}
-                         </option>
-                       ))}
-                     </select>
-                   </div>
+                     }
+                     value={colorFilter}
+                     onChange={setColorFilter}
+                     options={[
+                       { value: "All", label: "All Colors" },
+                       ...allColors.map(color => ({ value: color, label: color }))
+                     ]}
+                   />
                  )}
                  
                  {/* Clear All Filters Button */}
