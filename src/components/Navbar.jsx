@@ -274,76 +274,76 @@ export const Navbar = () => {
                 nav_items.map((item, index) => {
                   const isActive = isCategoryActive(item.href, item.subcategories);
                   return (
-                    <li key={index} className="relative group">
-                      <Link
-                        href={item.href}
-                        className={`cursor-pointer transition-colors duration-300 whitespace-nowrap flex items-center gap-1 ${
+                  <li key={index} className="relative group">
+                    <Link
+                      href={item.href}
+                      className={`cursor-pointer transition-colors duration-300 whitespace-nowrap flex items-center gap-1 ${
                           isActive
                             ? (isHomePage && !isScrolled)
                               ? 'text-yellow-300 drop-shadow-lg font-bold'
                               : 'text-amber-400 font-bold'
                             : (isHomePage && !isScrolled)
-                              ? 'text-white drop-shadow-lg group-hover:text-yellow-300' 
-                              : 'text-white group-hover:text-amber-400'
-                        }`}>
-                        {item.name}
-                        {/* Dropdown arrow for categories with subcategories */}
-                        {item.subcategories && item.subcategories.length > 0 && (
-                          <svg 
-                            className="w-4 h-4 transition-transform duration-300 group-hover:rotate-180" 
-                            fill="none" 
-                            stroke="currentColor" 
-                            viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                          </svg>
-                        )}
-                      </Link>
+                          ? 'text-white drop-shadow-lg group-hover:text-yellow-300' 
+                          : 'text-white group-hover:text-amber-400'
+                      }`}>
+                      {item.name}
+                      {/* Dropdown arrow for categories with subcategories */}
+                      {item.subcategories && item.subcategories.length > 0 && (
+                        <svg 
+                          className="w-4 h-4 transition-transform duration-300 group-hover:rotate-180" 
+                          fill="none" 
+                          stroke="currentColor" 
+                          viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      )}
+                    </Link>
                       {/* Golden underline effect - show full width if active */}
                       <span className={`absolute left-0 bottom-[-4px] h-[2px] transition-all duration-300 ${
                         isActive 
                           ? 'w-full' 
                           : 'w-0 group-hover:w-full'
                       } ${
-                        (isHomePage && !isScrolled) ? 'bg-yellow-300' : 'bg-amber-400'
-                      }`}></span>
-                      
-                      {/* Subcategories Dropdown */}
-                      {item.subcategories && item.subcategories.length > 0 && (
+                      (isHomePage && !isScrolled) ? 'bg-yellow-300' : 'bg-amber-400'
+                    }`}></span>
+                    
+                    {/* Subcategories Dropdown */}
+                    {item.subcategories && item.subcategories.length > 0 && (
                         <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 pointer-events-none group-hover:pointer-events-auto">
-                          <div className="py-2">
-                            {/* Main category link */}
-                            <Link
-                              href={item.href}
+                        <div className="py-2">
+                          {/* Main category link */}
+                          <Link
+                            href={item.href}
                               className={`block px-4 py-3 text-sm font-semibold transition-colors duration-200 border-b border-gray-100 ${
                                 isActiveRoute(item.href)
                                   ? 'bg-amber-50 text-amber-600'
                                   : 'text-gray-900 hover:bg-amber-50 hover:text-amber-600'
                               }`}
                               onClick={() => setIsOpen(false)}>
-                              View All {item.name}
-                            </Link>
-                            
-                            {/* Subcategories */}
+                            View All {item.name}
+                          </Link>
+                          
+                          {/* Subcategories */}
                             {item.subcategories.map((subcategory, subIndex) => {
                               const isSubActive = isActiveRoute(subcategory.href);
                               return (
-                                <Link
-                                  key={subIndex}
-                                  href={subcategory.href}
+                            <Link
+                              key={subIndex}
+                              href={subcategory.href}
                                   className={`block px-4 py-2 text-sm transition-colors duration-200 ${
                                     isSubActive
                                       ? 'bg-amber-50 text-amber-600 font-semibold'
                                       : 'text-gray-700 hover:bg-amber-50 hover:text-amber-600'
                                   }`}
                                   onClick={() => setIsOpen(false)}>
-                                  {subcategory.name}
-                                </Link>
+                              {subcategory.name}
+                            </Link>
                               );
                             })}
-                          </div>
                         </div>
-                      )}
-                    </li>
+                      </div>
+                    )}
+                  </li>
                   );
                 })
               )}
@@ -464,7 +464,7 @@ export const Navbar = () => {
                           <div className="flex-1 h-10 bg-gray-200 rounded-lg animate-pulse"></div>
                           <div className="w-8 h-8 bg-gray-200 rounded-lg animate-pulse"></div>
                         </div>
-                      </li>
+                  </li>
                     ))}
                   </>
                 ) : (
@@ -529,18 +529,18 @@ export const Navbar = () => {
                             {item.subcategories.map((subcategory, subIndex) => {
                               const isSubActive = isActiveRoute(subcategory.href);
                               return (
-                                <Link
-                                  key={subIndex}
-                                  href={subcategory.href}
+                              <Link
+                                key={subIndex}
+                                href={subcategory.href}
                                   className={`flex items-center gap-2 py-2 px-4 rounded-lg transition-all duration-200 text-sm border shadow-sm ${
                                     isSubActive
                                       ? 'text-amber-700 bg-amber-50 border-amber-300 font-semibold'
                                       : 'text-neutral-600 hover:text-yellow-600 hover:bg-amber-50 bg-white border-gray-100 hover:border-amber-200'
                                   }`}
-                                  onClick={() => setIsOpen(false)}>
+                                onClick={() => setIsOpen(false)}>
                                   <span className={`font-bold ${isSubActive ? 'text-amber-600' : 'text-amber-500'}`}>•</span>
-                                  <span>{subcategory.name}</span>
-                                </Link>
+                                <span>{subcategory.name}</span>
+                              </Link>
                               );
                             })}
                           </div>

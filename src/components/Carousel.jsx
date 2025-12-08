@@ -67,6 +67,7 @@ const Carousel = () => {
   const [slides, setSlides] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [isVisible, setIsVisible] = useState(false);
 
   // Fetch carousel slides from API
   useEffect(() => {
@@ -123,6 +124,8 @@ const Carousel = () => {
         ]);
       } finally {
         setLoading(false);
+        // Trigger fade-in after a brief delay for smooth transition
+        setTimeout(() => setIsVisible(true), 100);
       }
     };
 
@@ -176,7 +179,7 @@ const Carousel = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Don't render if loading or no slides
+  // Don't render if loading or no slides - show skeleton placeholder to prevent layout shift
   if (loading || slides.length === 0) {
     return (
       <div
@@ -184,8 +187,29 @@ const Carousel = () => {
         style={{ marginTop: '-120px', border: 'none', height: 'calc(90vh + 120px)' }}
         role="region"
         aria-label="Carousel">
-        <div className="flex items-center justify-center h-full">
-          <div className="text-white text-lg">Loading carousel...</div>
+        <div className="relative w-full h-[calc(90vh+120px)] sm:h-[calc(95vh+120px)] md:h-[calc(100vh+120px)] lg:h-[calc(100vh+120px)] overflow-hidden bg-black">
+          {/* Skeleton content overlay */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 sm:px-6 md:px-8"
+               style={{ top: '120px', bottom: 0 }}>
+            
+            {/* Decorative line skeleton */}
+            <div className="w-24 h-1 bg-white/20 rounded-full mb-6 sm:mb-8 animate-pulse"></div>
+            
+            {/* Title skeleton */}
+            <div className="mb-4 sm:mb-5 md:mb-6 space-y-3">
+              <div className="w-72 sm:w-96 md:w-[28rem] lg:w-[36rem] h-10 sm:h-12 md:h-16 lg:h-20 mx-auto bg-white/20 rounded-lg animate-pulse"></div>
+              <div className="w-64 sm:w-80 md:w-96 lg:w-[28rem] h-8 sm:h-10 md:h-12 lg:h-14 mx-auto bg-white/20 rounded-lg animate-pulse"></div>
+            </div>
+            
+            {/* Subtext skeleton */}
+            <div className="w-56 sm:w-72 md:w-96 h-6 sm:h-7 md:h-8 lg:h-9 mb-6 sm:mb-8 mx-auto bg-white/20 rounded-lg animate-pulse"></div>
+            
+            {/* Badge skeleton */}
+            <div className="w-48 sm:w-56 md:w-64 h-10 sm:h-11 md:h-12 mb-8 sm:mb-10 mx-auto bg-white/20 rounded-full animate-pulse"></div>
+            
+            {/* Button skeleton */}
+            <div className="w-40 sm:w-48 md:w-56 h-12 sm:h-14 md:h-16 mx-auto bg-white/20 rounded-full animate-pulse"></div>
+          </div>
         </div>
       </div>
     );
@@ -193,8 +217,12 @@ const Carousel = () => {
 
   return (
     <div
-      className="relative w-full overflow-hidden rounded-none bg-black"
-      style={{ marginTop: '-120px', border: 'none' }}
+      className="relative w-full overflow-hidden rounded-none bg-black transition-opacity duration-700 ease-out"
+      style={{ 
+        marginTop: '-120px', 
+        border: 'none',
+        opacity: isVisible ? 1 : 0
+      }}
       role="region"
       aria-label="Carousel">
       {/* Images wrapper - Hotstar style fade effect */}
