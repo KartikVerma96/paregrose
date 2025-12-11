@@ -20,8 +20,19 @@ export default function ConditionalLayout({ children }) {
     return <div>{children}</div>
   }
   
+  // Safety check: if pathname is not available, default to showing layout
+  if (!pathname) {
+    return (
+      <>
+        <Navbar />
+        <main className="flex-grow pt-[180px] lg:pt-[200px]">{children}</main>
+        <Footer />
+      </>
+    )
+  }
+  
   // Check if current route is an admin route
-  const isAdminRoute = pathname?.startsWith('/admin')
+  const isAdminRoute = pathname.startsWith('/admin')
   
   // Check if it's the home page (carousel handles its own positioning)
   const isHomePage = pathname === '/'
