@@ -13,15 +13,11 @@ export default function ConditionalLayout({ children }) {
     setMounted(true)
   }, [])
   
-  // During SSR, return children with default layout (always show navbar/footer)
+  // During SSR/static generation, return just children wrapped in a div
+  // This prevents client components (Navbar/Footer) from being rendered during SSR
+  // which can cause "Cannot read properties of undefined" errors during static generation
   if (!mounted) {
-    return (
-      <>
-        <Navbar />
-        <main className="flex-grow pt-[180px] lg:pt-[200px]">{children}</main>
-        <Footer />
-      </>
-    )
+    return <div>{children}</div>
   }
   
   // Check if current route is an admin route
