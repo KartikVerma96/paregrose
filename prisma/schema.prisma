@@ -41,7 +41,7 @@ model cart_items {
 model categories {
   id          Int      @id @default(autoincrement())
   name        String   @unique(map: "name") @db.VarChar(100)
-  slug        String   @unique(map: "slug") @db.VarChar(100)
+  slug        String   @unique(map: "categories_slug") @db.VarChar(100)
   description String?  @db.Text
   image_url   String?  @db.VarChar(500)
   is_active   Boolean? @default(true)
@@ -127,7 +127,7 @@ model product_images {
 model products {
   id                  Int                    @id @default(autoincrement())
   name                String                 @db.VarChar(200)
-  slug                String                 @unique(map: "slug") @db.VarChar(200)
+  slug                String                 @unique(map: "products_slug") @db.VarChar(200)
   description         String?                @db.Text
   short_description   String?                @db.VarChar(500)
   category_id         Int?
@@ -138,12 +138,12 @@ model products {
   sku                 String?                @unique(map: "sku") @db.VarChar(100)
   brand               String?                @db.VarChar(100)
   material            String?                @db.VarChar(100)
-  size_options        String?                @db.LongText
-  color_options       String?                @db.LongText
+  size_options        String?                @db.Text
+  color_options       String?                @db.Text
   availability        products_availability? @default(In_Stock)
   stock_quantity      Int?                   @default(0)
   weight              Decimal?               @db.Decimal(8, 2)
-  dimensions          String?                @db.LongText
+  dimensions          String?                @db.Text
   care_instructions   String?                @db.Text
   is_featured         Boolean?               @default(false)
   is_bestseller       Boolean?               @default(false)
@@ -224,7 +224,7 @@ model user {
   providerId String?
   role       String?   @default("customer") @db.VarChar(20)
   is_active  Boolean?  @default(true)
-  last_login DateTime? @db.DateTime(0)
+  last_login DateTime? @db.Timestamp
   
   // Relationships
   wishlist_items wishlist_items[]
