@@ -13,9 +13,9 @@ export default function ConditionalLayout({ children }) {
     setMounted(true)
   }, [])
   
-  // During SSR, return children without layout
+  // During SSR, return children without layout to avoid hydration issues
   if (!mounted) {
-    return <main className="flex-grow">{children}</main>
+    return <>{children}</>
   }
   
   // Check if current route is an admin route
