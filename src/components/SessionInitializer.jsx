@@ -4,15 +4,22 @@ import { useAuth } from '@/hooks/useAuth';
 
 export default function SessionInitializer() {
   const [mounted, setMounted] = useState(false);
-  const { initializeSession, isInitialized } = useAuth();
+  
+  // Always call hooks unconditionally (React rules)
+  const auth = useAuth();
+  const { initializeSession, isInitialized } = auth || {};
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
   useEffect(() => {
-    if (mounted && !isInitialized) {
-      initializeSession();
+    if (mounted && initializeSession && !isInitialized) {
+      try {
+        initializeSession();
+      } catch (error) {
+        console.error('Error initializing session:', error);
+      }
     }
   }, [mounted, initializeSession, isInitialized]);
 
