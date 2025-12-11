@@ -11,7 +11,7 @@ import { useWishlist } from "@/hooks/useWishlist";
 import { useCartDBRedux } from "@/hooks/useCartDBRedux";
 import { useCategories } from "@/hooks/useCategories";
 
-export const Navbar = () => {
+const Navbar = () => {
   const pathname = usePathname();
   const isHomePage = pathname === '/';
   const [isOpen, setIsOpen] = useState(false);
