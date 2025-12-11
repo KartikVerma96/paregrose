@@ -93,14 +93,14 @@ const Carousel = () => {
         } else {
           // Fallback to default slides if no data
           setSlides([
-            {
-              src: '/images/carousel/carousel_1.jpg',
-              width: 1200,
-              height: 600,
-              alt: 'Worldwide Shipping Banner',
-              text: 'Worldwide Shipping',
-              subtext: 'Get Free Gift On Prepaid Order',
-              offer: 'Get Up to 20% on Prepaid Orders',
+    {
+      src: '/images/carousel/carousel_1.jpg',
+      width: 1200,
+      height: 600,
+      alt: 'Worldwide Shipping Banner',
+      text: 'Worldwide Shipping',
+      subtext: 'Get Free Gift On Prepaid Order',
+      offer: 'Get Up to 20% on Prepaid Orders',
               buttonText: 'Shop Now',
               buttonLink: '/shop',
             },
@@ -110,10 +110,10 @@ const Carousel = () => {
         console.error('Error fetching carousel slides:', error);
         // Fallback to default slides on error
         setSlides([
-          {
+    {
             src: '/images/carousel/carousel_1.jpg',
-            width: 1200,
-            height: 600,
+      width: 1200,
+      height: 600,
             alt: 'Worldwide Shipping Banner',
             text: 'Worldwide Shipping',
             subtext: 'Get Free Gift On Prepaid Order',
@@ -181,9 +181,9 @@ const Carousel = () => {
 
   // Don't render if loading or no slides - show skeleton placeholder to prevent layout shift
   if (loading || slides.length === 0) {
-    return (
-      <div
-        className="relative w-full overflow-hidden rounded-none bg-black"
+  return (
+    <div
+      className="relative w-full overflow-hidden rounded-none bg-black"
         style={{ marginTop: '-120px', border: 'none', height: 'calc(90vh + 120px)' }}
         role="region"
         aria-label="Carousel">
@@ -347,9 +347,9 @@ const Carousel = () => {
                   className="text-sm sm:text-base md:text-lg font-semibold text-amber-200"
                   style={{
                     textShadow: '0 2px 10px rgba(0, 0, 0, 0.5)'
-                  }}>
-                  {slide.offer}
-                </p>
+                }}>
+                {slide.offer}
+              </p>
               </div>
 
               {/* CTA Button with stunning design */}

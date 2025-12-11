@@ -503,7 +503,7 @@ const ShopPageClient = ({ categorySlug = null }) => {
                  <CustomDropdown
                    label="Category"
                    icon={<Tag className="w-4 h-4 text-amber-600" strokeWidth={2.5} />}
-                   value={filter}
+                     value={filter}
                    onChange={setFilter}
                    options={[
                      { value: "All", label: "All Categories" },
@@ -519,7 +519,7 @@ const ShopPageClient = ({ categorySlug = null }) => {
                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                      </svg>
                    }
-                   value={availabilityFilter}
+                     value={availabilityFilter}
                    onChange={setAvailabilityFilter}
                    options={[
                      { value: "All", label: "All Stock Status" },
@@ -538,7 +538,7 @@ const ShopPageClient = ({ categorySlug = null }) => {
                          <path strokeLinecap="round" strokeLinejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                        </svg>
                      }
-                     value={sizeFilter}
+                       value={sizeFilter}
                      onChange={setSizeFilter}
                      options={[
                        { value: "All", label: "All Sizes" },
@@ -556,7 +556,7 @@ const ShopPageClient = ({ categorySlug = null }) => {
                          <path strokeLinecap="round" strokeLinejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
                        </svg>
                      }
-                     value={colorFilter}
+                       value={colorFilter}
                      onChange={setColorFilter}
                      options={[
                        { value: "All", label: "All Colors" },
