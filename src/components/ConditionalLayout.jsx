@@ -1,11 +1,22 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 
 export default function ConditionalLayout({ children }) {
   const pathname = usePathname()
+  const [mounted, setMounted] = useState(false)
+  
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+  
+  // During SSR, return children without layout
+  if (!mounted) {
+    return <main className="flex-grow">{children}</main>
+  }
   
   // Check if current route is an admin route
   const isAdminRoute = pathname?.startsWith('/admin')
