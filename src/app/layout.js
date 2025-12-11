@@ -6,7 +6,7 @@ import SessionInitializer from "@/components/SessionInitializer";
 import { AlertProvider } from "@/contexts/AlertContext";
 import ConditionalLayout from "@/components/ConditionalLayout";
 import DynamicTitle from "@/components/DynamicTitle";
-import { generateMetadata } from "@/lib/seo";
+import { generateMetadata, generateOrganizationSchema, generateWebsiteSchema } from "@/lib/seo";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -16,8 +16,27 @@ const inter = Inter({
 export const metadata = generateMetadata;
 
 export default function RootLayout({ children }) {
+  const organizationSchema = generateOrganizationSchema();
+  const websiteSchema = generateWebsiteSchema();
+
   return (
     <html lang="en">
+      <head>
+        {/* Organization Structured Data */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(organizationSchema),
+          }}
+        />
+        {/* Website Structured Data */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(websiteSchema),
+          }}
+        />
+      </head>
       <body
         className={`${inter.variable} antialiased flex flex-col min-h-screen`}
       >

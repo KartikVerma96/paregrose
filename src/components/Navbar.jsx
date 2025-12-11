@@ -3,7 +3,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { CgMenuLeft } from "react-icons/cg";
 import { FaRegHeart, FaRegUser, FaShoppingCart, FaSignOutAlt } from "react-icons/fa";
 import LoginModal from "./LoginModal";
 import RegisterModal from "./RegisterModal";
@@ -158,8 +157,8 @@ export const Navbar = () => {
           {/* Top Row - Logo and Icons (Desktop) */}
           <div className="lg:flex lg:justify-center lg:items-center hidden mb-2 relative">
             {/* Logo - Centered */}
-            <div className="cursor-pointer">
-              <Link href="/">
+            <div className="cursor-pointer group">
+              <Link href="/" className="flex flex-col items-center">
                 <Image
                   src="/images/paregrose_logo.png"
                   width={200}
@@ -169,6 +168,7 @@ export const Navbar = () => {
                   className="w-auto h-auto"
                   style={{ maxWidth: '200px', height: 'auto' }}
                 />
+                <span className="block w-0 group-hover:w-20 h-1 bg-gradient-to-r from-yellow-400 to-amber-500 mt-2 rounded-full transition-all duration-500 ease-out"></span>
               </Link>
             </div>
 
@@ -353,8 +353,8 @@ export const Navbar = () => {
           {/* Mobile/Tablet Layout */}
           <div className="lg:hidden flex justify-between items-center">
             {/* Logo */}
-            <div className="cursor-pointer">
-              <Link href="/">
+            <div className="cursor-pointer group">
+              <Link href="/" className="flex flex-col items-center">
                 <Image
                   src="/images/paregrose_logo.png"
                   width={120}
@@ -363,6 +363,7 @@ export const Navbar = () => {
                   priority
                   className="w-[90px] h-auto sm:w-[100px] md:w-[120px]"
                 />
+                <span className="block w-0 group-hover:w-16 sm:group-hover:w-20 h-1 bg-gradient-to-r from-yellow-400 to-amber-500 mt-2 rounded-full transition-all duration-500 ease-out"></span>
               </Link>
             </div>
 

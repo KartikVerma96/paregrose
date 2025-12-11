@@ -21,6 +21,16 @@ async function getProduct(id) {
           { size: 'asc' },
           { color: 'asc' }
         ]
+      },
+      reviews: {
+        where: { is_approved: true },
+        include: {
+          user: {
+            select: { fullName: true }
+          }
+        },
+        orderBy: { created_at: 'desc' },
+        take: 10
       }
     }
   });
@@ -73,38 +83,53 @@ export async function generateMetadata({ params }) {
   titleParts.push('Paregrose');
   const pageTitle = titleParts.join(' - ');
   
+  const fullImageUrl = primaryImage.startsWith('http') ? primaryImage : `https://paregrose.com${primaryImage}`;
+  const description = product.description || product.short_description || `Buy ${product.name} at Paregrose. Premium quality ethnic wear${product.category ? ` in ${product.category.name}` : ''} category. Free shipping on orders above ₹999.`;
+
   return {
+    metadataBase: new URL('https://paregrose.com'),
     title: pageTitle,
-    description: product.description || product.short_description || `Buy ${product.name} at Paregrose. Premium quality ethnic wear.`,
+    description: description,
     keywords: [
       product.name.toLowerCase(),
       product.category?.name?.toLowerCase() || 'ethnic wear',
+      product.subcategory?.name?.toLowerCase() || '',
       product.material?.toLowerCase() || '',
+      product.brand?.toLowerCase() || '',
       'ethnic wear',
       'traditional wear',
       'premium fashion',
-      'indian wear'
+      'indian wear',
+      'buy online',
+      'women fashion',
+      'designer wear',
     ].filter(Boolean),
     openGraph: {
-      title: `${product.name}${discountPercentage > 0 ? ` - ${discountPercentage}% OFF` : ''}`,
-      description: product.description || product.short_description || '',
+      title: `${product.name}${discountPercentage > 0 ? ` - ${discountPercentage}% OFF` : ''} | Paregrose`,
+      description: description,
       url: `https://paregrose.com/product/${product.id}`,
+      siteName: 'Paregrose',
       images: [
         {
-          url: primaryImage,
-          width: 800,
-          height: 600,
+          url: fullImageUrl,
+          width: 1200,
+          height: 630,
           alt: product.name,
         },
       ],
-      type: 'website',
-      siteName: 'Paregrose',
+      type: 'product',
+      locale: 'en_IN',
+      ...(product.category && {
+        section: product.category.name,
+      }),
     },
     twitter: {
       card: 'summary_large_image',
-      title: `${product.name}${discountPercentage > 0 ? ` - ${discountPercentage}% OFF` : ''}`,
-      description: product.description || product.short_description || '',
-      images: [primaryImage],
+      title: `${product.name}${discountPercentage > 0 ? ` - ${discountPercentage}% OFF` : ''} | Paregrose`,
+      description: description,
+      images: [fullImageUrl],
+      creator: '@paregrose',
+      site: '@paregrose',
     },
     alternates: {
       canonical: `https://paregrose.com/product/${product.id}`,
@@ -112,10 +137,12 @@ export async function generateMetadata({ params }) {
     other: {
       'product:price:amount': price.toString(),
       'product:price:currency': 'INR',
-      'product:availability': product.availability || 'in stock',
+      'product:availability': product.availability === 'In_Stock' ? 'in stock' : product.availability === 'Limited_Stock' ? 'limited availability' : 'out of stock',
       'product:condition': 'new',
       'product:brand': product.brand || 'Paregrose',
       'product:sku': product.sku || '',
+      'product:retailer': 'Paregrose',
+      'product:retailer_id': 'paregrose',
     },
   };
 }
@@ -124,32 +151,90 @@ export async function generateMetadata({ params }) {
 function generateStructuredData(product) {
   const price = parseFloat(product.price);
   const originalPrice = parseFloat(product.original_price || product.price);
-  const images = product.images?.map(img => img.image_url) || [];
+  const images = product.images?.map(img => `https://paregrose.com${img.image_url}`) || ['https://paregrose.com/images/carousel/carousel_1.jpg'];
+  const availability = product.availability === 'In_Stock' ? 'https://schema.org/InStock' : 
+                      product.availability === 'Limited_Stock' ? 'https://schema.org/LimitedAvailability' : 
+                      'https://schema.org/OutOfStock';
   
+  const breadcrumbs = [
+    { name: 'Home', url: 'https://paregrose.com' },
+    { name: 'Shop', url: 'https://paregrose.com/shop' },
+  ];
+  if (product.category) {
+    breadcrumbs.push({ name: product.category.name, url: `https://paregrose.com/shop/${product.category.slug}` });
+  }
+  breadcrumbs.push({ name: product.name, url: `https://paregrose.com/product/${product.id}` });
+
   return {
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: product.name,
-    description: product.description || product.short_description,
+    description: product.description || product.short_description || `Buy ${product.name} at Paregrose. Premium quality ethnic wear.`,
     image: images,
     brand: {
       '@type': 'Brand',
       name: product.brand || 'Paregrose',
     },
     sku: product.sku || '',
-    category: product.category?.name || '',
+    mpn: product.sku || '',
+    category: product.category?.name || 'Ethnic Wear',
+    material: product.material || '',
     offers: {
       '@type': 'Offer',
       price: price,
       priceCurrency: 'INR',
-      availability: product.availability === 'In_Stock' ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
-      priceValidUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      availability: availability,
+      priceValidUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      url: `https://paregrose.com/product/${product.id}`,
       seller: {
         '@type': 'Organization',
         name: 'Paregrose',
+        url: 'https://paregrose.com',
       },
+      ...(originalPrice > price && {
+        priceSpecification: {
+          '@type': 'UnitPriceSpecification',
+          price: price,
+          priceCurrency: 'INR',
+          referenceQuantity: {
+            '@type': 'QuantitativeValue',
+            value: 1,
+            unitCode: 'C62',
+          },
+        },
+      }),
     },
-    material: product.material,
+    aggregateRating: product.reviews && product.reviews.length > 0 ? {
+      '@type': 'AggregateRating',
+      ratingValue: product.reviews.reduce((sum, r) => sum + r.rating, 0) / product.reviews.length,
+      reviewCount: product.reviews.length,
+      bestRating: 5,
+      worstRating: 1,
+    } : undefined,
+    review: product.reviews?.slice(0, 5).map(review => ({
+      '@type': 'Review',
+      author: {
+        '@type': 'Person',
+        name: review.user?.fullName || 'Anonymous',
+      },
+      datePublished: review.created_at,
+      reviewBody: review.comment || '',
+      reviewRating: {
+        '@type': 'Rating',
+        ratingValue: review.rating,
+        bestRating: 5,
+        worstRating: 1,
+      },
+    })) || [],
+    breadcrumb: {
+      '@type': 'BreadcrumbList',
+      itemListElement: breadcrumbs.map((item, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        name: item.name,
+        item: item.url,
+      })),
+    },
   };
 }
 
