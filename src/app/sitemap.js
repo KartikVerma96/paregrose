@@ -43,7 +43,7 @@ export default async function sitemap() {
     const productPages = products.map((product) => ({
       url: `${baseUrl}/product/${product.id}`,
       lastModified: product.updated_at || new Date(),
-      changeFrequency: 'weekly' as const,
+      changeFrequency: 'weekly',
       priority: 0.8,
     }));
 
@@ -51,7 +51,7 @@ export default async function sitemap() {
     const categoryPages = categories.map((category) => ({
       url: `${baseUrl}/shop/${category.slug}`,
       lastModified: category.updated_at || new Date(),
-      changeFrequency: 'weekly' as const,
+      changeFrequency: 'weekly',
       priority: 0.8,
     }));
 
