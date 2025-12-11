@@ -20,6 +20,12 @@ export default async function sitemap() {
   ];
 
   try {
+    // Check if DATABASE_URL is available
+    if (!process.env.DATABASE_URL || !process.env.DATABASE_URL.startsWith('postgresql://')) {
+      console.log('DATABASE_URL not available during build, returning static pages only');
+      return staticPages;
+    }
+
     // Fetch active products from database
     const products = await prisma.products.findMany({
       where: { is_active: true },

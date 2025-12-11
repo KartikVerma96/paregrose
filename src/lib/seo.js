@@ -11,6 +11,11 @@ const defaultSEOSettings = {
 
 export async function getSEOSettings() {
   try {
+    // Check if DATABASE_URL is available
+    if (!process.env.DATABASE_URL || !process.env.DATABASE_URL.startsWith('postgresql://')) {
+      return defaultSEOSettings
+    }
+
     // Fetch SEO settings from database
     const seoSettings = await prisma.business_settings.findMany({
       where: {
