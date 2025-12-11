@@ -6,16 +6,22 @@ import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 
 export default function ConditionalLayout({ children }) {
-  const pathname = usePathname()
   const [mounted, setMounted] = useState(false)
+  const pathname = usePathname()
   
   useEffect(() => {
     setMounted(true)
   }, [])
   
-  // During SSR, return children without layout to avoid hydration issues
+  // During SSR, return children with default layout (always show navbar/footer)
   if (!mounted) {
-    return <>{children}</>
+    return (
+      <>
+        <Navbar />
+        <main className="flex-grow pt-[180px] lg:pt-[200px]">{children}</main>
+        <Footer />
+      </>
+    )
   }
   
   // Check if current route is an admin route

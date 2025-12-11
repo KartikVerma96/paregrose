@@ -43,66 +43,77 @@ export async function getSEOSettings() {
 }
 
 export async function generateMetadata() {
-  const seoSettings = await getSEOSettings()
-  
-  return {
-    metadataBase: new URL('https://paregrose.com'),
-    title: {
-      default: seoSettings.metaTitle,
-      template: `%s | ${seoSettings.metaTitle.split(' - ')[0]}`
-    },
-    description: seoSettings.metaDescription,
-    keywords: seoSettings.metaKeywords.split(',').map(k => k.trim()),
-    authors: [{ name: "Paregrose" }],
-    creator: "Paregrose",
-    publisher: "Paregrose",
-    formatDetection: {
-      email: false,
-      address: false,
-      telephone: false,
-    },
-    robots: {
-      index: true,
-      follow: true,
-      googleBot: {
+  try {
+    const seoSettings = await getSEOSettings()
+    
+    return {
+      metadataBase: new URL('https://paregrose.com'),
+      title: {
+        default: seoSettings.metaTitle || 'Paregrose - Premium Ethnic Wear & Fashion',
+        template: `%s | ${(seoSettings.metaTitle || 'Paregrose').split(' - ')[0]}`
+      },
+      description: seoSettings.metaDescription || 'Discover exquisite ethnic wear at Paregrose. Premium sarees, lehengas, gowns, and traditional outfits for women.',
+      keywords: (seoSettings.metaKeywords || 'ethnic wear, sarees, lehengas, gowns').split(',').map(k => k.trim()),
+      authors: [{ name: "Paregrose" }],
+      creator: "Paregrose",
+      publisher: "Paregrose",
+      formatDetection: {
+        email: false,
+        address: false,
+        telephone: false,
+      },
+      robots: {
         index: true,
         follow: true,
-        'max-video-preview': -1,
-        'max-image-preview': 'large',
-        'max-snippet': -1,
-      },
-    },
-    openGraph: {
-      type: 'website',
-      locale: 'en_IN',
-      url: 'https://paregrose.com',
-      title: seoSettings.metaTitle,
-      description: seoSettings.metaDescription,
-      siteName: 'Paregrose',
-      images: [
-        {
-          url: '/images/carousel/carousel_1.jpg',
-          width: 1200,
-          height: 630,
-          alt: 'Paregrose - Premium Ethnic Wear & Designer Fashion',
+        googleBot: {
+          index: true,
+          follow: true,
+          'max-video-preview': -1,
+          'max-image-preview': 'large',
+          'max-snippet': -1,
         },
-      ],
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: seoSettings.metaTitle,
-      description: seoSettings.metaDescription,
-      images: ['/images/carousel/carousel_1.jpg'],
-      creator: '@paregrose',
-      site: '@paregrose',
-    },
-    verification: {
-      google: seoSettings.googleAnalyticsId || '',
-    },
-    alternates: {
-      canonical: 'https://paregrose.com',
-    },
-    category: 'Fashion',
+      },
+      openGraph: {
+        type: 'website',
+        locale: 'en_IN',
+        url: 'https://paregrose.com',
+        title: seoSettings.metaTitle || 'Paregrose - Premium Ethnic Wear & Fashion',
+        description: seoSettings.metaDescription || 'Discover exquisite ethnic wear at Paregrose.',
+        siteName: 'Paregrose',
+        images: [
+          {
+            url: '/images/carousel/carousel_1.jpg',
+            width: 1200,
+            height: 630,
+            alt: 'Paregrose - Premium Ethnic Wear & Designer Fashion',
+          },
+        ],
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: seoSettings.metaTitle || 'Paregrose - Premium Ethnic Wear & Fashion',
+        description: seoSettings.metaDescription || 'Discover exquisite ethnic wear at Paregrose.',
+        images: ['/images/carousel/carousel_1.jpg'],
+        creator: '@paregrose',
+        site: '@paregrose',
+      },
+      verification: {
+        google: seoSettings.googleAnalyticsId || '',
+      },
+      alternates: {
+        canonical: 'https://paregrose.com',
+      },
+      category: 'Fashion',
+    }
+  } catch (error) {
+    console.error('Error generating metadata:', error)
+    // Return default metadata if there's an error
+    return {
+      metadataBase: new URL('https://paregrose.com'),
+      title: 'Paregrose - Premium Ethnic Wear & Fashion',
+      description: 'Discover exquisite ethnic wear at Paregrose. Premium sarees, lehengas, gowns, and traditional outfits for women.',
+      keywords: ['ethnic wear', 'sarees', 'lehengas', 'gowns', 'traditional wear', 'women fashion'],
+    }
   }
 }
 
