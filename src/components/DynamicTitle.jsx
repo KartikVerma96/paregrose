@@ -1,12 +1,19 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 
 export default function DynamicTitle() {
   const pathname = usePathname()
+  const [mounted, setMounted] = useState(false)
   
   useEffect(() => {
+    setMounted(true)
+  }, [])
+  
+  useEffect(() => {
+    if (!mounted) return
+    
     // Only update title on home page, not on specific product/category pages
     // Pages like /product/[id], /cart, /wishlist have their own metadata
     const isHomePage = pathname === '/' || pathname === '/home'
@@ -41,12 +48,14 @@ export default function DynamicTitle() {
       }
     }
 
-    window.addEventListener('storage', handleStorageChange)
+    if (typeof window !== 'undefined') {
+      window.addEventListener('storage', handleStorageChange)
 
-    return () => {
-      window.removeEventListener('storage', handleStorageChange)
+      return () => {
+        window.removeEventListener('storage', handleStorageChange)
+      }
     }
-  }, [pathname])
+  }, [pathname, mounted])
 
   return null // This component doesn't render anything
 }
