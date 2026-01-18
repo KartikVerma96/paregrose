@@ -102,7 +102,7 @@ nano .env.local
 DATABASE_URL="mysql://paregrose_user:your_strong_password_here@localhost:3306/paregrose_db"
 
 # NextAuth Configuration
-NEXTAUTH_URL="http://your-domain.com"  # or http://your-server-ip:3000
+NEXTAUTH_URL="https://www.freereelsdownload.com"  # Your domain
 NEXTAUTH_SECRET="your-secret-key-minimum-32-characters-long-random-string"
 
 # Google OAuth (Optional - if you want Google login)
@@ -191,51 +191,168 @@ pm2 delete paregrose  # Remove from PM2
 ### 11. Configure Firewall (if needed)
 
 ```bash
-# Allow port 3000 (or your chosen port)
-sudo ufw allow 3000/tcp
+# Allow ports
+sudo ufw allow 80/tcp      # HTTP
+sudo ufw allow 443/tcp      # HTTPS
+sudo ufw allow 3000/tcp     # Next.js app (internal)
 sudo ufw reload
 ```
 
-### 12. Set Up Nginx Reverse Proxy (Recommended)
+### 12. Install Apache and phpMyAdmin
 
-**Install Nginx:**
+**Install Apache:**
 ```bash
-sudo apt install nginx -y
+sudo apt update
+sudo apt install apache2 -y
+sudo systemctl enable apache2
+sudo systemctl start apache2
 ```
 
-**Create Nginx configuration:**
+**Install PHP and required extensions:**
 ```bash
-sudo nano /etc/nginx/sites-available/paregrose
+sudo apt install php php-mysql php-mbstring php-zip php-gd php-json php-curl -y
+```
+
+**Install phpMyAdmin:**
+```bash
+sudo apt install phpmyadmin -y
+```
+
+**During phpMyAdmin installation:**
+- Select **Apache2** when prompted
+- Select **Yes** to configure database with dbconfig-common
+- Enter a password for phpMyAdmin database user (or leave blank)
+- Select **Yes** to configure database automatically
+
+**Enable required Apache modules:**
+```bash
+sudo a2enmod rewrite
+sudo a2enmod proxy
+sudo a2enmod proxy_http
+sudo a2enmod headers
+sudo systemctl restart apache2
+```
+
+### 13. Configure Apache Virtual Host for Paregrose
+
+**Create Apache configuration:**
+```bash
+sudo nano /etc/apache2/sites-available/paregrose.conf
 ```
 
 **Add this configuration:**
-```nginx
-server {
-    listen 80;
-    server_name your-domain.com;  # Replace with your domain or IP
-
-    location / {
-        proxy_pass http://localhost:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_cache_bypass $http_upgrade;
-    }
-}
+```apache
+<VirtualHost *:80>
+    ServerName www.freereelsdownload.com
+    ServerAlias freereelsdownload.com
+    
+    # Proxy to Next.js app
+    ProxyPreserveHost On
+    ProxyPass / http://localhost:3000/
+    ProxyPassReverse / http://localhost:3000/
+    
+    # WebSocket support
+    RewriteEngine on
+    RewriteCond %{HTTP:Upgrade} websocket [NC]
+    RewriteCond %{HTTP:Connection} upgrade [NC]
+    RewriteRule ^/?(.*) "ws://localhost:3000/$1" [P,L]
+    
+    # Headers
+    ProxyPassReverse / http://localhost:3000/
+    ProxyPassReverse / http://localhost:3000/
+    
+    # Logging
+    ErrorLog ${APACHE_LOG_DIR}/paregrose_error.log
+    CustomLog ${APACHE_LOG_DIR}/paregrose_access.log combined
+</VirtualHost>
 ```
 
 **Enable the site:**
 ```bash
-sudo ln -s /etc/nginx/sites-available/paregrose /etc/nginx/sites-enabled/
-sudo nginx -t  # Test configuration
-sudo systemctl restart nginx
+sudo a2ensite paregrose.conf
+sudo a2dissite 000-default.conf  # Disable default site (optional)
+sudo apache2ctl configtest  # Test configuration
+sudo systemctl restart apache2
 ```
 
-### 13. Verify Deployment
+### 14. Configure phpMyAdmin Access
+
+**Secure phpMyAdmin (Important for security):**
+```bash
+sudo nano /etc/apache2/conf-available/phpmyadmin.conf
+```
+
+**Add this at the top (before other directives):**
+```apache
+# Restrict phpMyAdmin access
+<Directory /usr/share/phpmyadmin>
+    Options SymLinksIfOwnerMatch
+    DirectoryIndex index.php
+    AllowOverride All
+    
+    # Restrict access by IP (optional - remove if you want access from anywhere)
+    # Require ip YOUR_SERVER_IP
+    # Require ip YOUR_HOME_IP
+    
+    # Or use password protection (recommended)
+    AuthType Basic
+    AuthName "Restricted Access"
+    AuthUserFile /etc/apache2/.htpasswd
+    Require valid-user
+</Directory>
+```
+
+**Create password file for phpMyAdmin:**
+```bash
+# Install apache2-utils if not installed
+sudo apt install apache2-utils -y
+
+# Create password file (replace 'admin' with your desired username)
+sudo htpasswd -c /etc/apache2/.htpasswd admin
+# Enter password when prompted
+
+# Restart Apache
+sudo systemctl restart apache2
+```
+
+**Access phpMyAdmin:**
+- URL: `http://www.freereelsdownload.com/phpmyadmin`
+- Login with MySQL credentials (paregrose_user) or root
+- You'll need to enter the Apache password first (if configured)
+
+### 15. Set Up SSL Certificate (Let's Encrypt)
+
+**Install Certbot:**
+```bash
+sudo apt install certbot python3-certbot-apache -y
+```
+
+**Obtain SSL certificate:**
+```bash
+sudo certbot --apache -d www.freereelsdownload.com -d freereelsdownload.com
+```
+
+**Follow the prompts:**
+- Enter your email address
+- Agree to terms
+- Choose whether to redirect HTTP to HTTPS (recommended: Yes)
+- Certbot will automatically configure Apache for HTTPS
+
+**Auto-renewal (already configured by Certbot):**
+```bash
+# Test renewal
+sudo certbot renew --dry-run
+```
+
+**Update NEXTAUTH_URL after SSL:**
+```bash
+nano .env.local
+# Change NEXTAUTH_URL to: https://www.freereelsdownload.com
+# Restart PM2
+pm2 restart paregrose
+```
+
+### 16. Verify Deployment
 
 1. **Check if the app is running:**
    ```bash
@@ -296,24 +413,37 @@ npm ci
 npm run db:generate
 npm run build
 pm2 restart paregrose
+sudo systemctl restart apache2
 
 # View logs
 pm2 logs paregrose
+sudo tail -f /var/log/apache2/paregrose_error.log
+sudo tail -f /var/log/apache2/paregrose_access.log
 
 # Check status
 pm2 status
+sudo systemctl status apache2
+sudo systemctl status mysql
 ```
+
+## Access Points
+
+- **Main Website:** https://www.freereelsdownload.com
+- **phpMyAdmin:** https://www.freereelsdownload.com/phpmyadmin
+- **Direct Next.js (if needed):** http://localhost:3000
 
 ## Security Checklist
 
 - [ ] Strong database password set
 - [ ] NEXTAUTH_SECRET is random and secure (32+ characters)
-- [ ] .env.local file has correct permissions (not world-readable)
-- [ ] Firewall configured
-- [ ] Nginx configured (if using)
-- [ ] SSL certificate installed (Let's Encrypt recommended)
+- [ ] .env.local file has correct permissions (not world-readable): `chmod 600 .env.local`
+- [ ] Firewall configured (ports 80, 443, 3000)
+- [ ] Apache configured with SSL
+- [ ] SSL certificate installed (Let's Encrypt)
+- [ ] phpMyAdmin password protected (Apache Basic Auth)
 - [ ] Database user has minimal required privileges
 - [ ] Regular backups configured
+- [ ] phpMyAdmin access restricted (IP or password protected)
 
 ## Next Steps
 
