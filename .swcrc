@@ -1,0 +1,36 @@
+{
+  "jsc": {
+    "parser": {
+      "syntax": "ecmascript",
+      "jsx": true,
+      "decorators": false,
+      "dynamicImport": true
+    },
+    "transform": {
+      "react": {
+        "runtime": "automatic"
+      }
+    },
+    "target": "es2022",
+    "loose": false,
+    "externalHelpers": false,
+    "keepClassNames": true,
+    "keepFunctionNames": true,
+    "minify": {
+      "compress": {
+        "drop_console": false,
+        "drop_debugger": true,
+        "pure_funcs": null
+      },
+      "mangle": {
+        "keep_classnames": true,
+        "keep_fnames": true
+      }
+    }
+  },
+  "module": {
+    "type": "es6"
+  },
+  "minify": true,
+  "sourceMaps": false
+}

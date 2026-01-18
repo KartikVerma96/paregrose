@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cart Debug</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            padding: 20px;
+            background: #1e1e1e;
+            color: #00ff00;
+        }
+        pre {
+            background: #000;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+        button {
+            background: #ff4444;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #cc0000;
+        }
+        .success {
+            background: #44ff44;
+        }
+        .success:hover {
+            background: #00cc00;
+        }
+    </style>
+</head>
+<body>
+    <h1>🛒 Cart Debug Tool</h1>
+    
+    <div>
+        <button onclick="showCart()">Show Cart Data</button>
+        <button onclick="clearCart()">Clear Cart</button>
+        <button class="success" onclick="location.href='http://localhost:3000/shop'">Go to Shop</button>
+    </div>
+    
+    <h2>Cart Data:</h2>
+    <pre id="output">Click "Show Cart Data" to see localStorage cart contents...</pre>
+    
+    <script>
+        function showCart() {
+            const cart = localStorage.getItem('cart');
+            const output = document.getElementById('output');
+            
+            if (!cart) {
+                output.textContent = 'No cart data found in localStorage';
+                return;
+            }
+            
+            try {
+                const parsed = JSON.parse(cart);
+                output.textContent = JSON.stringify(parsed, null, 2);
+                
+                console.log('=== CART DEBUG ===');
+                console.log('Total items:', parsed.length);
+                parsed.forEach((item, i) => {
+                    console.log(`\nItem ${i + 1}:`, item.name);
+                    console.log('  Image:', item.image);
+                    console.log('  Keys:', Object.keys(item));
+                });
+            } catch (e) {
+                output.textContent = 'Error parsing cart data: ' + e.message;
+            }
+        }
+        
+        function clearCart() {
+            localStorage.removeItem('cart');
+            document.getElementById('output').textContent = 'Cart cleared! Refresh the page or go to shop.';
+            alert('Cart cleared from localStorage');
+        }
+        
+        // Auto-load on page load
+        window.onload = showCart;
+    </script>
+</body>
+</html>
+

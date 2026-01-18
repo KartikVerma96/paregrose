@@ -1,0 +1,269 @@
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { signIn, signOut, getSession } from 'next-auth/react';
+
+// Async thunk for credentials login
+export const loginWithCredentials = createAsyncThunk(
+  'auth/loginWithCredentials',
+  async ({ email, password }, { rejectWithValue }) => {
+    try {
+      const result = await signIn('credentials', {
+        redirect: false,
+        email,
+        password,
+      });
+      
+      if (result.error) {
+        return rejectWithValue(result.error);
+      }
+      
+      const sessionResponse = await fetch('/api/auth/session', {
+        headers: { Accept: 'application/json' },
+      });
+      
+      if (!sessionResponse.ok) {
+        return rejectWithValue('Failed to fetch session');
+      }
+      
+      const session = await sessionResponse.json();
+      if (!session.user) {
+        return rejectWithValue('No user session found');
+      }
+      
+      return session.user;
+    } catch (error) {
+      return rejectWithValue(error.message || 'Unexpected error during login');
+    }
+  }
+);
+
+// Async thunk for Google login
+export const loginWithGoogle = createAsyncThunk(
+  'auth/loginWithGoogle',
+  async (_, { rejectWithValue }) => {
+    try {
+      const result = await signIn('google', { redirect: false });
+      
+      if (result?.error) {
+        console.error('Google signIn error:', result.error);
+        return rejectWithValue(
+          result.error === 'OAuthCallback'
+            ? 'Google authentication was cancelled'
+            : result.error === 'OAuthSignin'
+            ? 'Error occurred during Google authentication'
+            : result.error === 'OAuthCreateAccount'
+            ? 'Could not create Google account'
+            : result.error === 'EmailCreateAccount'
+            ? 'Could not create account with this email'
+            : result.error === 'Callback'
+            ? 'Authentication callback error'
+            : result.error === 'OAuthAccountNotLinked'
+            ? 'Email already exists with different provider'
+            : result.error === 'EmailSignin'
+            ? 'Check your email for a sign-in link'
+            : result.error === 'CredentialsSignin'
+            ? 'Invalid credentials'
+            : result.error === 'SessionRequired'
+            ? 'Please sign in to access this page'
+            : result.error === 'Default'
+            ? 'An error occurred during authentication'
+            : result.error
+        );
+      }
+      
+      // Wait a moment for the session to be established
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const sessionResponse = await fetch('/api/auth/session', {
+        headers: { Accept: 'application/json' },
+      });
+      
+      if (!sessionResponse.ok) {
+        return rejectWithValue('Failed to fetch session after Google login');
+      }
+      
+      const session = await sessionResponse.json();
+      if (!session?.user) {
+        return rejectWithValue('No user session found after Google login');
+      }
+      
+      console.log('Google login successful:', session.user);
+      return session.user;
+    } catch (error) {
+      console.error('Google login catch error:', error);
+      return rejectWithValue(error.message || 'Unexpected error during Google login');
+    }
+  }
+);
+
+// Async thunk for registration
+export const registerUser = createAsyncThunk(
+  'auth/registerUser',
+  async ({ fullName, email, password }, { rejectWithValue }) => {
+    try {
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fullName, email, password }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        return rejectWithValue(result.message || 'Registration failed');
+      }
+
+      // After successful registration, automatically log in
+      const loginResult = await signIn('credentials', {
+        redirect: false,
+        email,
+        password,
+      });
+
+      if (loginResult.error) {
+        return rejectWithValue(loginResult.error || 'Failed to sign in after registration');
+      }
+
+      const sessionResponse = await fetch('/api/auth/session', {
+        headers: { Accept: 'application/json' },
+      });
+
+      if (!sessionResponse.ok) {
+        return rejectWithValue('Failed to fetch session after registration');
+      }
+
+      const session = await sessionResponse.json();
+      if (!session.user) {
+        return rejectWithValue('No user session found after registration');
+      }
+
+      return session.user;
+    } catch (error) {
+      return rejectWithValue(error.message || 'Unexpected error during registration');
+    }
+  }
+);
+
+// Async thunk for logout
+export const logoutUser = createAsyncThunk(
+  'auth/logoutUser',
+  async (_, { rejectWithValue }) => {
+    try {
+      await signOut({ redirect: false });
+      return null;
+    } catch (error) {
+      return rejectWithValue(error.message || 'Logout failed');
+    }
+  }
+);
+
+// Async thunk to initialize session on app load
+export const initializeSession = createAsyncThunk(
+  'auth/initializeSession',
+  async (_, { rejectWithValue }) => {
+    try {
+      const session = await getSession();
+      return session?.user || null;
+    } catch (error) {
+      return rejectWithValue(error.message || 'Failed to initialize session');
+    }
+  }
+);
+
+const authSlice = createSlice({
+  name: 'auth',
+  initialState: {
+    user: null,
+    error: null,
+    loading: false,
+    isInitialized: false,
+  },
+  reducers: {
+    clearError: (state) => {
+      state.error = null;
+    },
+    setUser: (state, action) => {
+      state.user = action.payload;
+    },
+  },
+  extraReducers: (builder) => {
+    builder
+      // Login with credentials
+      .addCase(loginWithCredentials.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(loginWithCredentials.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload;
+        state.error = null;
+      })
+      .addCase(loginWithCredentials.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || 'Login failed';
+      })
+      
+      // Login with Google
+      .addCase(loginWithGoogle.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(loginWithGoogle.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload;
+        state.error = null;
+      })
+      .addCase(loginWithGoogle.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || 'Google login failed';
+      })
+      
+      // Register user
+      .addCase(registerUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(registerUser.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload;
+        state.error = null;
+      })
+      .addCase(registerUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || 'Registration failed';
+      })
+      
+      // Logout user
+      .addCase(logoutUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(logoutUser.fulfilled, (state) => {
+        state.loading = false;
+        state.user = null;
+        state.error = null;
+      })
+      .addCase(logoutUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || 'Logout failed';
+      })
+      
+      // Initialize session
+      .addCase(initializeSession.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(initializeSession.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload;
+        state.isInitialized = true;
+      })
+      .addCase(initializeSession.rejected, (state) => {
+        state.loading = false;
+        state.user = null;
+        state.isInitialized = true;
+      });
+  },
+});
+
+export const { clearError, setUser } = authSlice.actions;
+
+export default authSlice.reducer;

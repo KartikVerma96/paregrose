@@ -1,0 +1,297 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model business_settings {
+  id            Int      @id @default(autoincrement())
+  setting_key   String   @unique(map: "setting_key") @db.VarChar(100)
+  setting_value String   @db.Text
+  description   String?  @db.Text
+  created_at    DateTime @default(now()) @db.Timestamp(0)
+  updated_at    DateTime @default(now()) @db.Timestamp(0)
+
+  @@index([setting_key], map: "idx_business_settings_key")
+}
+
+model cart_items {
+  id             Int      @id @default(autoincrement())
+  session_id     String   @db.VarChar(100)
+  user_id        Int?
+  product_id     Int
+  quantity       Int      @default(1)
+  selected_size  String?  @db.VarChar(20)
+  selected_color String?  @db.VarChar(50)
+  price_at_time  Decimal  @db.Decimal(10, 2)
+  created_at     DateTime @default(now()) @db.Timestamp(0)
+  updated_at     DateTime @default(now()) @db.Timestamp(0)
+
+  // Relationships
+  product        products @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
+  @@index([product_id], map: "idx_cart_items_product")
+  @@index([session_id], map: "idx_cart_items_session")
+  @@index([user_id], map: "idx_cart_items_user")
+}
+
+model categories {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique(map: "name") @db.VarChar(100)
+  slug        String   @unique(map: "slug") @db.VarChar(100)
+  description String?  @db.Text
+  image_url   String?  @db.VarChar(500)
+  is_active   Boolean? @default(true)
+  created_at  DateTime @default(now()) @db.Timestamp(0)
+  updated_at  DateTime @default(now()) @db.Timestamp(0)
+
+  // Relationships
+  subcategories subcategories[]
+  products      products[]
+}
+
+model subcategories {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique(map: "subcategory_name") @db.VarChar(100)
+  slug        String   @unique(map: "subcategory_slug") @db.VarChar(100)
+  description String?  @db.Text
+  image_url   String?  @db.VarChar(500)
+  is_active   Boolean? @default(true)
+  category_id Int
+  created_at  DateTime @default(now()) @db.Timestamp(0)
+  updated_at  DateTime @default(now()) @db.Timestamp(0)
+
+  // Relationships
+  category    categories @relation(fields: [category_id], references: [id], onDelete: Cascade)
+  products    products[]
+
+  @@index([category_id], map: "idx_subcategories_category")
+}
+
+model category {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique(map: "Category_name_key")
+  slug        String   @unique(map: "Category_slug_key")
+  description String?
+  image_url   String?
+  is_active   Boolean  @default(true)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @default(now())
+}
+
+model contact_messages {
+  id          Int                      @id @default(autoincrement())
+  name        String                   @db.VarChar(100)
+  email       String                   @db.VarChar(100)
+  phone       String?                  @db.VarChar(20)
+  subject     String?                  @db.VarChar(200)
+  message     String                   @db.Text
+  status      contact_messages_status? @default(new)
+  admin_notes String?                  @db.Text
+  created_at  DateTime                 @default(now()) @db.Timestamp(0)
+  updated_at  DateTime                 @default(now()) @db.Timestamp(0)
+
+  @@index([status], map: "idx_contact_status")
+}
+
+model newsletter_subscribers {
+  id              Int       @id @default(autoincrement())
+  email           String    @unique(map: "email") @db.VarChar(100)
+  name            String?   @db.VarChar(100)
+  is_active       Boolean?  @default(true)
+  subscribed_at   DateTime  @default(now()) @db.Timestamp(0)
+  unsubscribed_at DateTime? @db.Timestamp(0)
+
+  @@index([email], map: "idx_newsletter_email")
+}
+
+model product_images {
+  id         Int      @id @default(autoincrement())
+  product_id Int
+  image_url  String   @db.VarChar(500)
+  alt_text   String?  @db.VarChar(200)
+  is_primary Boolean? @default(false)
+  sort_order Int?     @default(0)
+  created_at DateTime @default(now()) @db.Timestamp(0)
+
+  // Relationships
+  product     products @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
+  @@index([is_primary], map: "idx_product_images_primary")
+  @@index([product_id], map: "idx_product_images_product")
+}
+
+model products {
+  id                  Int                    @id @default(autoincrement())
+  name                String                 @db.VarChar(200)
+  slug                String                 @unique(map: "slug") @db.VarChar(200)
+  description         String?                @db.Text
+  short_description   String?                @db.VarChar(500)
+  category_id         Int?
+  subcategory_id      Int?
+  price               Decimal                @db.Decimal(10, 2)
+  original_price      Decimal?               @db.Decimal(10, 2)
+  discount_percentage Decimal?               @default(0.00) @db.Decimal(5, 2)
+  sku                 String?                @unique(map: "sku") @db.VarChar(100)
+  brand               String?                @db.VarChar(100)
+  material            String?                @db.VarChar(100)
+  size_options        String?                @db.LongText
+  color_options       String?                @db.LongText
+  availability        products_availability? @default(In_Stock)
+  stock_quantity      Int?                   @default(0)
+  weight              Decimal?               @db.Decimal(8, 2)
+  dimensions          String?                @db.LongText
+  care_instructions   String?                @db.Text
+  is_featured         Boolean?               @default(false)
+  is_bestseller       Boolean?               @default(false)
+  is_new_arrival      Boolean?               @default(false)
+  is_active           Boolean?               @default(true)
+  meta_title          String?                @db.VarChar(200)
+  meta_description    String?                @db.Text
+  meta_keywords       String?                @db.Text
+  created_at          DateTime               @default(now()) @db.Timestamp(0)
+  updated_at          DateTime               @default(now()) @db.Timestamp(0)
+
+  // Relationships
+  category      categories?        @relation(fields: [category_id], references: [id], onDelete: SetNull)
+  subcategory   subcategories?     @relation(fields: [subcategory_id], references: [id], onDelete: SetNull)
+  images        product_images[]
+  reviews       reviews[]
+  cart_items    cart_items[]
+  variants      product_variants[]
+
+  @@index([is_active], map: "idx_products_active")
+  @@index([availability], map: "idx_products_availability")
+  @@index([is_bestseller], map: "idx_products_bestseller")
+  @@index([category_id], map: "idx_products_category")
+  @@index([subcategory_id], map: "idx_products_subcategory")
+  @@index([is_featured], map: "idx_products_featured")
+  @@index([price], map: "idx_products_price")
+}
+
+model product_variants {
+  id              Int      @id @default(autoincrement())
+  product_id      Int
+  size            String?  @db.VarChar(20)
+  color           String?  @db.VarChar(50)
+  sku             String?  @db.VarChar(100)
+  stock_quantity  Int      @default(0)
+  price_adjustment Decimal? @default(0.00) @db.Decimal(10, 2)
+  is_active       Boolean? @default(true)
+  created_at      DateTime @default(now()) @db.Timestamp(0)
+  updated_at      DateTime @default(now()) @db.Timestamp(0)
+
+  // Relationships
+  product products @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
+  @@unique([product_id, size, color], map: "product_variants_product_size_color_unique")
+  @@index([product_id], map: "idx_product_variants_product")
+  @@index([is_active], map: "idx_product_variants_active")
+}
+
+model reviews {
+  id            Int      @id @default(autoincrement())
+  product_id    Int
+  user_id       Int
+  rating        Int
+  title         String?  @db.VarChar(200)
+  comment       String?  @db.Text
+  is_approved   Boolean? @default(true)
+  helpful_count Int?     @default(0)
+  created_at    DateTime @default(now()) @db.Timestamp(0)
+  updated_at    DateTime @default(now()) @db.Timestamp(0)
+
+  // Relationships
+  product       products @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
+  @@index([product_id], map: "idx_reviews_product")
+  @@index([rating], map: "idx_reviews_rating")
+  @@index([user_id], map: "idx_reviews_user")
+}
+
+model user {
+  id         Int       @id @default(autoincrement())
+  fullName   String
+  email      String    @unique(map: "User_email_key")
+  password   String?
+  provider   String?   @default("credentials")
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime?
+  providerId String?
+  role       String?   @default("customer") @db.VarChar(20)
+  is_active  Boolean?  @default(true)
+  last_login DateTime? @db.DateTime(0)
+}
+
+model whatsapp_order_items {
+  id             Int      @id @default(autoincrement())
+  order_id       Int
+  product_id     Int
+  product_name   String   @db.VarChar(200)
+  product_sku    String?  @db.VarChar(100)
+  quantity       Int
+  unit_price     Decimal  @db.Decimal(10, 2)
+  total_price    Decimal  @db.Decimal(10, 2)
+  selected_size  String?  @db.VarChar(20)
+  selected_color String?  @db.VarChar(50)
+  created_at     DateTime @default(now()) @db.Timestamp(0)
+
+  @@index([order_id], map: "idx_whatsapp_order_items_order")
+  @@index([product_id], map: "idx_whatsapp_order_items_product")
+}
+
+model whatsapp_orders {
+  id               Int                     @id @default(autoincrement())
+  order_id         String                  @unique(map: "order_id") @db.VarChar(50)
+  user_id          Int?
+  customer_name    String                  @db.VarChar(100)
+  customer_phone   String                  @db.VarChar(20)
+  customer_email   String?                 @db.VarChar(100)
+  whatsapp_message String                  @db.Text
+  total_amount     Decimal                 @db.Decimal(10, 2)
+  status           whatsapp_orders_status? @default(sent)
+  sent_at          DateTime                @default(now()) @db.Timestamp(0)
+  confirmed_at     DateTime?               @db.Timestamp(0)
+  completed_at     DateTime?               @db.Timestamp(0)
+  notes            String?                 @db.Text
+  created_at       DateTime                @default(now()) @db.Timestamp(0)
+  updated_at       DateTime                @default(now()) @db.Timestamp(0)
+
+  @@index([order_id], map: "idx_whatsapp_orders_order_id")
+  @@index([status], map: "idx_whatsapp_orders_status")
+  @@index([user_id], map: "idx_whatsapp_orders_user")
+}
+
+model wishlist_items {
+  id         Int      @id @default(autoincrement())
+  user_id    Int
+  product_id Int
+  created_at DateTime @default(now()) @db.Timestamp(0)
+
+  @@index([product_id], map: "idx_wishlist_items_product")
+  @@index([user_id], map: "idx_wishlist_items_user")
+}
+
+enum contact_messages_status {
+  new
+  read
+  replied
+  closed
+}
+
+enum whatsapp_orders_status {
+  sent
+  received
+  confirmed
+  cancelled
+  completed
+}
+
+enum products_availability {
+  In_Stock      @map("In Stock")
+  Out_of_Stock  @map("Out of Stock")
+  Limited_Stock @map("Limited Stock")
+}
